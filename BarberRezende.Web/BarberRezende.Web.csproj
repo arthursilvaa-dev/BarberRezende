@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\BarberRezende.Application\BarberRezende.Application.csproj" />
+    <ProjectReference Include="..\BarberRezende.Domain\BarberRezende.Domain.csproj" />
+    <ProjectReference Include="..\BarberRezende.Infrastructure\BarberRezende.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
