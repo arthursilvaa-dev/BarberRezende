@@ -1,22 +1,19 @@
 ﻿namespace BarberRezende.Application.DTOs.Agendamentos
 {
-    /// <summary>
-    /// DTO completo de agendamentos.
-    /// </summary>
+    // DTO de retorno (READ) para listar/consultar agendamentos
     public class AgendamentosDTO
     {
         public int Id { get; set; }
-
-        /// <summary>ID do cliente que fez o agendamento.</summary>
-        public int ClienteId { get; set; }
-
-        /// <summary>ID do barbeiro responsável.</summary>
-        public int BarbeiroId { get; set; }
-
-        /// <summary>ID do serviço solicitado.</summary>
-        public int ServicoId { get; set; }
-
-        /// <summary>Data e hora do agendamento.</summary>
         public DateTime DataHora { get; set; }
+
+        public int ClienteId { get; set; }
+        public string ClienteNome { get; set; } = string.Empty;
+
+        public int BarbeiroId { get; set; }
+        public string BarbeiroNome { get; set; } = string.Empty;
+
+        public int ServicoId { get; set; }
+        public string ServicoNome { get; set; } = string.Empty;
+        public decimal ServicoPreco { get; set; }
     }
 }

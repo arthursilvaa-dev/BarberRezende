@@ -2,6 +2,10 @@
 
 namespace BarberRezende.Application.Interfaces.Services
 {
+    /// <summary>
+    /// Contrato do service de Clientes (camada Application).
+    /// O Controller só conhece isso (não conhece EF, DbContext, etc.).
+    /// </summary>
     public interface IClientesService
     {
         Task<IEnumerable<ClientesDTO>> GetAllAsync();

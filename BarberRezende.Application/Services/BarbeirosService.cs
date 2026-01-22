@@ -6,60 +6,80 @@ using BarberRezende.Domain.Interfaces;
 
 namespace BarberRezende.Application.Services
 {
+    /// <summary>
+    /// Regras/orquestração de Barbeiros.
+    /// Aqui fica a lógica de negócio e chamadas ao repositório.
+    /// </summary>
     public class BarbeirosService : IBarbeirosService
     {
-        private readonly IBarbeiroRepository _repo;
+        private readonly IBarbeiroRepository _barbeiroRepository;
         private readonly IMapper _mapper;
 
-        public BarbeirosService(IBarbeiroRepository repo, IMapper mapper)
+        public BarbeirosService(IBarbeiroRepository barbeiroRepository, IMapper mapper)
         {
-            _repo = repo;
+            _barbeiroRepository = barbeiroRepository;
             _mapper = mapper;
         }
 
-        public Task<IEnumerable<BarbeirosDTO>> GetAllAsync()
+        public async Task<IEnumerable<BarbeirosDTO>> GetAllAsync()
         {
-            var list = _repo.GetAll();
-            var dto = _mapper.Map<IEnumerable<BarbeirosDTO>>(list);
-            return Task.FromResult(dto);
+            var entities = await _barbeiroRepository.GetAllAsync();
+            return _mapper.Map<IEnumerable<BarbeirosDTO>>(entities);
         }
 
-        public Task<BarbeirosDTO?> GetByIdAsync(int id)
+        public async Task<BarbeirosDTO?> GetByIdAsync(int id)
         {
-            var entity = _repo.GetById(id);
-            if (entity is null) return Task.FromResult<BarbeirosDTO?>(null);
+            var entity = await _barbeiroRepository.GetByIdAsync(id);
 
-            var dto = _mapper.Map<BarbeirosDTO>(entity);
-            return Task.FromResult<BarbeirosDTO?>(dto);
+            if (entity is null)
+                return null;
+
+            return _mapper.Map<BarbeirosDTO>(entity);
         }
 
-        public Task<BarbeirosDTO> CreateAsync(BarbeirosCreateDTO dto)
+        public async Task<BarbeirosDTO> CreateAsync(BarbeirosCreateDTO dto)
         {
+            // Exemplo de validação simples
+            if (string.IsNullOrWhiteSpace(dto.Nome))
+                throw new ArgumentException("Nome do barbeiro é obrigatório.");
+
+            if (string.IsNullOrWhiteSpace(dto.Especialidade))
+                throw new ArgumentException("Especialidade do barbeiro é obrigatória.");
+
             var entity = _mapper.Map<Barbeiro>(dto);
-            _repo.Create(entity);
 
-            var result = _mapper.Map<BarbeirosDTO>(entity);
-            return Task.FromResult(result);
+            await _barbeiroRepository.AddAsync(entity);
+            await _barbeiroRepository.SaveChangesAsync();
+
+            return _mapper.Map<BarbeirosDTO>(entity);
         }
 
-        public Task<bool> UpdateAsync(int id, BarbeirosUpdateDTO dto)
+        public async Task<bool> UpdateAsync(int id, BarbeirosUpdateDTO dto)
         {
-            var existing = _repo.GetById(id);
-            if (existing is null) return Task.FromResult(false);
+            var existing = await _barbeiroRepository.GetByIdAsync(id);
+
+            if (existing is null)
+                return false;
 
             _mapper.Map(dto, existing);
-            _repo.Update(existing);
 
-            return Task.FromResult(true);
+            _barbeiroRepository.Update(existing);
+            await _barbeiroRepository.SaveChangesAsync();
+
+            return true;
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            var existing = _repo.GetById(id);
-            if (existing is null) return Task.FromResult(false);
+            var existing = await _barbeiroRepository.GetByIdAsync(id);
 
-            _repo.Delete(id);
-            return Task.FromResult(true);
+            if (existing is null)
+                return false;
+
+            _barbeiroRepository.Delete(existing);
+            await _barbeiroRepository.SaveChangesAsync();
+
+            return true;
         }
     }
 }

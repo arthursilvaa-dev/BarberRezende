@@ -8,58 +8,59 @@ namespace BarberRezende.Application.Services
 {
     public class FuncionariosService : IFuncionariosService
     {
-        private readonly IFuncionarioRepository _repo;
+        private readonly IFuncionarioRepository _funcionarioRepository;
         private readonly IMapper _mapper;
 
-        public FuncionariosService(IFuncionarioRepository repo, IMapper mapper)
+        public FuncionariosService(IFuncionarioRepository funcionarioRepository, IMapper mapper)
         {
-            _repo = repo;
+            _funcionarioRepository = funcionarioRepository;
             _mapper = mapper;
         }
 
-        public Task<IEnumerable<FuncionariosDTO>> GetAllAsync()
+        public async Task<IEnumerable<FuncionariosDTO>> GetAllAsync()
         {
-            var list = _repo.GetAll();
-            var dto = _mapper.Map<IEnumerable<FuncionariosDTO>>(list);
-            return Task.FromResult(dto);
+            var funcionarios = await _funcionarioRepository.GetAllAsync();
+            return _mapper.Map<IEnumerable<FuncionariosDTO>>(funcionarios);
         }
 
-        public Task<FuncionariosDTO?> GetByIdAsync(int id)
+        public async Task<FuncionariosDTO?> GetByIdAsync(int id)
         {
-            var entity = _repo.GetById(id);
-            if (entity is null) return Task.FromResult<FuncionariosDTO?>(null);
-
-            var dto = _mapper.Map<FuncionariosDTO>(entity);
-            return Task.FromResult<FuncionariosDTO?>(dto);
+            var funcionario = await _funcionarioRepository.GetByIdAsync(id);
+            return funcionario is null ? null : _mapper.Map<FuncionariosDTO>(funcionario);
         }
 
-        public Task<FuncionariosDTO> CreateAsync(FuncionariosCreateDTO dto)
+        public async Task<FuncionariosDTO> CreateAsync(FuncionariosCreateDTO dto)
         {
             var entity = _mapper.Map<Funcionario>(dto);
-            _repo.Create(entity);
 
-            var result = _mapper.Map<FuncionariosDTO>(entity);
-            return Task.FromResult(result);
+            await _funcionarioRepository.AddAsync(entity);
+            await _funcionarioRepository.SaveChangesAsync();
+
+            return _mapper.Map<FuncionariosDTO>(entity);
         }
 
-        public Task<bool> UpdateAsync(int id, FuncionariosUpdateDTO dto)
+        public async Task<bool> UpdateAsync(int id, FuncionariosUpdateDTO dto)
         {
-            var existing = _repo.GetById(id);
-            if (existing is null) return Task.FromResult(false);
+            var existing = await _funcionarioRepository.GetByIdAsync(id);
+            if (existing is null) return false;
 
             _mapper.Map(dto, existing);
-            _repo.Update(existing);
 
-            return Task.FromResult(true);
+            _funcionarioRepository.Update(existing);
+            await _funcionarioRepository.SaveChangesAsync();
+
+            return true;
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            var existing = _repo.GetById(id);
-            if (existing is null) return Task.FromResult(false);
+            var existing = await _funcionarioRepository.GetByIdAsync(id);
+            if (existing is null) return false;
 
-            _repo.Delete(id);
-            return Task.FromResult(true);
+            _funcionarioRepository.Delete(existing);
+            await _funcionarioRepository.SaveChangesAsync();
+
+            return true;
         }
     }
 }

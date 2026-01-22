@@ -6,60 +6,94 @@ using BarberRezende.Domain.Interfaces;
 
 namespace BarberRezende.Application.Services
 {
+    /// <summary>
+    /// Regras/orquestração de Serviços.
+    /// Aqui fazemos validações e chamamos o repositório.
+    /// </summary>
     public class ServicosService : IServicosService
     {
-        private readonly IServicoRepository _repo;
+        private readonly IServicoRepository _servicoRepository;
         private readonly IMapper _mapper;
 
-        public ServicosService(IServicoRepository repo, IMapper mapper)
+        public ServicosService(IServicoRepository servicoRepository, IMapper mapper)
         {
-            _repo = repo;
+            _servicoRepository = servicoRepository;
             _mapper = mapper;
         }
 
-        public Task<IEnumerable<ServicosDTO>> GetAllAsync()
+        public async Task<IEnumerable<ServicosDTO>> GetAllAsync()
         {
-            var list = _repo.GetAll();
-            var dto = _mapper.Map<IEnumerable<ServicosDTO>>(list);
-            return Task.FromResult(dto);
+            var entities = await _servicoRepository.GetAllAsync();
+            return _mapper.Map<IEnumerable<ServicosDTO>>(entities);
         }
 
-        public Task<ServicosDTO?> GetByIdAsync(int id)
+        public async Task<ServicosDTO?> GetByIdAsync(int id)
         {
-            var entity = _repo.GetById(id);
-            if (entity is null) return Task.FromResult<ServicosDTO?>(null);
+            var entity = await _servicoRepository.GetByIdAsync(id);
 
-            var dto = _mapper.Map<ServicosDTO>(entity);
-            return Task.FromResult<ServicosDTO?>(dto);
+            if (entity is null)
+                return null;
+
+            return _mapper.Map<ServicosDTO>(entity);
         }
 
-        public Task<ServicosDTO> CreateAsync(ServicosCreateDTO dto)
+        public async Task<ServicosDTO> CreateAsync(ServicosCreateDTO dto)
         {
+            // Validações mínimas (profissionais) -> evita lixo no banco
+            if (string.IsNullOrWhiteSpace(dto.NomeServico))
+                throw new ArgumentException("Nome do serviço é obrigatório.");
+
+            if (dto.Preco <= 0)
+                throw new ArgumentException("Preço precisa ser maior que zero.");
+
+            if (dto.DuracaoMinutos <= 0)
+                throw new ArgumentException("Duração precisa ser maior que zero.");
+
             var entity = _mapper.Map<Servico>(dto);
-            _repo.Create(entity);
 
-            var result = _mapper.Map<ServicosDTO>(entity);
-            return Task.FromResult(result);
+            await _servicoRepository.AddAsync(entity);
+            await _servicoRepository.SaveChangesAsync();
+
+            return _mapper.Map<ServicosDTO>(entity);
         }
 
-        public Task<bool> UpdateAsync(int id, ServicosUpdateDTO dto)
+        public async Task<bool> UpdateAsync(int id, ServicosUpdateDTO dto)
         {
-            var existing = _repo.GetById(id);
-            if (existing is null) return Task.FromResult(false);
+            var existing = await _servicoRepository.GetByIdAsync(id);
+
+            if (existing is null)
+                return false;
+
+            // Se você quiser permitir "atualização parcial", aqui é o lugar.
+            // Por enquanto: exige preencher corretamente.
+            if (string.IsNullOrWhiteSpace(dto.NomeServico))
+                throw new ArgumentException("Nome do serviço é obrigatório.");
+
+            if (dto.Preco <= 0)
+                throw new ArgumentException("Preço precisa ser maior que zero.");
+
+            if (dto.DuracaoMinutos <= 0)
+                throw new ArgumentException("Duração precisa ser maior que zero.");
 
             _mapper.Map(dto, existing);
-            _repo.Update(existing);
 
-            return Task.FromResult(true);
+            _servicoRepository.Update(existing);
+            await _servicoRepository.SaveChangesAsync();
+
+            return true;
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            var existing = _repo.GetById(id);
-            if (existing is null) return Task.FromResult(false);
+            var existing = await _servicoRepository.GetByIdAsync(id);
 
-            _repo.Delete(id);
-            return Task.FromResult(true);
+            if (existing is null)
+                return false;
+
+            _servicoRepository.Delete(existing);
+            await _servicoRepository.SaveChangesAsync();
+
+            return true;
         }
     }
 }

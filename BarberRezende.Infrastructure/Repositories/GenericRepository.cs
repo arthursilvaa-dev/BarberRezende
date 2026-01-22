@@ -1,12 +1,12 @@
-﻿using BarberRezende.Domain.Interfaces;
+﻿using System.Linq.Expressions;
+using BarberRezende.Domain.Interfaces;
 using BarberRezende.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace BarberRezende.Infrastructure.Repositories
 {
     /// <summary>
-    /// Repositório genérico: concentra CRUD básico para qualquer entidade.
-    /// As classes específicas (ClienteRepository, etc.) podem herdar dele.
+    /// Implementação do repositório genérico usando EF Core.
     /// </summary>
     public class GenericRepository<T> : IGenericRepository<T> where T : class
     {
@@ -19,29 +19,25 @@ namespace BarberRezende.Infrastructure.Repositories
             _dbSet = _context.Set<T>();
         }
 
-        public IEnumerable<T> GetAll() => _dbSet.ToList();
+        public async Task<IEnumerable<T>> GetAllAsync()
+            => await _dbSet.AsNoTracking().ToListAsync();
 
-        public T? GetById(int id) => _dbSet.Find(id);
+        public async Task<T?> GetByIdAsync(int id)
+            => await _dbSet.FindAsync(id);
 
-        public void Create(T entity)
-        {
-            _dbSet.Add(entity);
-            _context.SaveChanges();
-        }
+        public async Task AddAsync(T entity)
+            => await _dbSet.AddAsync(entity);
 
         public void Update(T entity)
-        {
-            _dbSet.Update(entity);
-            _context.SaveChanges();
-        }
+            => _dbSet.Update(entity);
 
-        public void Delete(int id)
-        {
-            var entity = GetById(id);
-            if (entity is null) return;
+        public void Delete(T entity)
+            => _dbSet.Remove(entity);
 
-            _dbSet.Remove(entity);
-            _context.SaveChanges();
-        }
+        public async Task<bool> ExistsAsync(Expression<Func<T, bool>> predicate)
+            => await _dbSet.AnyAsync(predicate);
+
+        public async Task<int> SaveChangesAsync()
+            => await _context.SaveChangesAsync();
     }
 }

@@ -7,72 +7,78 @@ using BarberRezende.Domain.Interfaces;
 namespace BarberRezende.Application.Services
 {
     /// <summary>
-    /// Camada de aplicação: orquestra regras simples e integra DTO <-> Entidade.
-    /// Aqui não tem EF diretamente; quem conversa com o banco é o Repository.
+    /// Orquestra as regras de Cliente.
+    /// Aqui você valida, aplica regras e chama o repositório (Infra).
     /// </summary>
     public class ClientesService : IClientesService
     {
-        private readonly IClienteRepository _repo;
+        private readonly IClienteRepository _clienteRepository;
         private readonly IMapper _mapper;
 
-        public ClientesService(IClienteRepository repo, IMapper mapper)
+        public ClientesService(IClienteRepository clienteRepository, IMapper mapper)
         {
-            _repo = repo;
+            _clienteRepository = clienteRepository;
             _mapper = mapper;
         }
 
-        public Task<IEnumerable<ClientesDTO>> GetAllAsync()
+        public async Task<IEnumerable<ClientesDTO>> GetAllAsync()
         {
-            // Repo retorna entidades
-            var list = _repo.GetAll();
-
-            // Service retorna DTOs
-            var dto = _mapper.Map<IEnumerable<ClientesDTO>>(list);
-
-            return Task.FromResult(dto);
+            var entities = await _clienteRepository.GetAllAsync();
+            return _mapper.Map<IEnumerable<ClientesDTO>>(entities);
         }
 
-        public Task<ClientesDTO?> GetByIdAsync(int id)
+        public async Task<ClientesDTO?> GetByIdAsync(int id)
         {
-            var entity = _repo.GetById(id);
-            if (entity is null) return Task.FromResult<ClientesDTO?>(null);
+            var entity = await _clienteRepository.GetByIdAsync(id);
 
-            var dto = _mapper.Map<ClientesDTO>(entity);
-            return Task.FromResult<ClientesDTO?>(dto);
+            if (entity is null)
+                return null;
+
+            return _mapper.Map<ClientesDTO>(entity);
         }
 
-        public Task<ClientesDTO> CreateAsync(ClientesCreateDTO dto)
+        public async Task<ClientesDTO> CreateAsync(ClientesCreateDTO dto)
         {
-            // DTO -> Entidade
+            // Regra simples (exemplo): não deixar telefone vazio/space
+            // (Validações mais profissionais faremos depois com FluentValidation)
+            if (string.IsNullOrWhiteSpace(dto.Telefone))
+                throw new ArgumentException("Telefone é obrigatório.");
+
             var entity = _mapper.Map<Cliente>(dto);
 
-            // Persiste
-            _repo.Create(entity);
+            await _clienteRepository.AddAsync(entity);
+            await _clienteRepository.SaveChangesAsync();
 
-            // Entidade (já com Id) -> DTO
-            var result = _mapper.Map<ClientesDTO>(entity);
-            return Task.FromResult(result);
+            return _mapper.Map<ClientesDTO>(entity);
         }
 
-        public Task<bool> UpdateAsync(int id, ClientesUpdateDTO dto)
+        public async Task<bool> UpdateAsync(int id, ClientesUpdateDTO dto)
         {
-            var existing = _repo.GetById(id);
-            if (existing is null) return Task.FromResult(false);
+            var existing = await _clienteRepository.GetByIdAsync(id);
 
-            // Atualiza campos do existing a partir do dto
+            if (existing is null)
+                return false;
+
+            // Atualiza campos do existing com base no DTO
             _mapper.Map(dto, existing);
 
-            _repo.Update(existing);
-            return Task.FromResult(true);
+            _clienteRepository.Update(existing);
+            await _clienteRepository.SaveChangesAsync();
+
+            return true;
         }
 
-        public Task<bool> DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            var existing = _repo.GetById(id);
-            if (existing is null) return Task.FromResult(false);
+            var existing = await _clienteRepository.GetByIdAsync(id);
 
-            _repo.Delete(id);
-            return Task.FromResult(true);
+            if (existing is null)
+                return false;
+
+            _clienteRepository.Delete(existing);
+            await _clienteRepository.SaveChangesAsync();
+
+            return true;
         }
     }
 }

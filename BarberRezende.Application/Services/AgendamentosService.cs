@@ -6,60 +6,159 @@ using BarberRezende.Domain.Interfaces;
 
 namespace BarberRezende.Application.Services
 {
+    /// <summary>
+    /// Camada Application (Service):
+    /// - Orquestra casos de uso (CRUD + filtros)
+    /// - Aplica regras de aplicação (ex: validações de IDs existentes, etc.)
+    /// - NÃO faz acesso direto ao banco (isso é do repository/infra)
+    /// - NÃO deve expor entidades do Domain direto (usa DTOs)
+    /// </summary>
     public class AgendamentosService : IAgendamentosService
     {
-        private readonly IAgendamentoRepository _repo;
+        private readonly IAgendamentoRepository _agendamentoRepository;
         private readonly IMapper _mapper;
 
-        public AgendamentosService(IAgendamentoRepository repo, IMapper mapper)
+        public AgendamentosService(IAgendamentoRepository agendamentoRepository, IMapper mapper)
         {
-            _repo = repo;
+            _agendamentoRepository = agendamentoRepository;
             _mapper = mapper;
         }
 
-        public Task<IEnumerable<AgendamentosDTO>> GetAllAsync()
+        // =========================
+        // GET ALL
+        // =========================
+        public async Task<IEnumerable<AgendamentosDTO>> GetAllAsync()
         {
-            var list = _repo.GetAll();
-            var dto = _mapper.Map<IEnumerable<AgendamentosDTO>>(list);
-            return Task.FromResult(dto);
+            var agendamentos = await _agendamentoRepository.GetAllAsync();
+            return _mapper.Map<IEnumerable<AgendamentosDTO>>(agendamentos);
         }
 
-        public Task<AgendamentosDTO?> GetByIdAsync(int id)
+        // =========================
+        // GET BY ID
+        // =========================
+        public async Task<AgendamentosDTO?> GetByIdAsync(int id)
         {
-            var entity = _repo.GetById(id);
-            if (entity is null) return Task.FromResult<AgendamentosDTO?>(null);
+            var agendamento = await _agendamentoRepository.GetByIdAsync(id);
 
-            var dto = _mapper.Map<AgendamentosDTO>(entity);
-            return Task.FromResult<AgendamentosDTO?>(dto);
+            if (agendamento is null)
+                return null;
+
+            return _mapper.Map<AgendamentosDTO>(agendamento);
         }
 
-        public Task<AgendamentosDTO> CreateAsync(AgendamentosCreateDTO dto)
+        // =========================
+        // GET BY FILTER (NOVO - corrige o erro do build)
+        // =========================
+        /// <summary>
+        /// Filtra agendamentos por ClienteId, BarbeiroId, ServicoId e Data (somente o dia).
+        /// 
+        /// Importante:
+        /// - Os parâmetros são opcionais (nullable).
+        /// - Se vier tudo null, retorna tudo (ou você pode decidir retornar vazio, mas aqui retorna tudo).
+        /// - DateOnly filtra pelo DIA (independente do horário).
+        /// </summary>
+        public async Task<IEnumerable<AgendamentosDTO>> GetByFilterAsync(
+            int? clienteId,
+            int? barbeiroId,
+            int? servicoId,
+            DateOnly? data)
         {
+            // 1) Busca todos (simples e funciona sempre).
+            //    Depois, filtramos em memória.
+            //    (Mais pra frente, a gente pode otimizar criando um método específico no repository para filtrar no banco.)
+            var agendamentos = await _agendamentoRepository.GetAllAsync();
+
+            // 2) Filtra por ClienteId
+            if (clienteId.HasValue)
+                agendamentos = agendamentos.Where(a => a.ClienteId == clienteId.Value);
+
+            // 3) Filtra por BarbeiroId
+            if (barbeiroId.HasValue)
+                agendamentos = agendamentos.Where(a => a.BarbeiroId == barbeiroId.Value);
+
+            // 4) Filtra por ServicoId
+            if (servicoId.HasValue)
+                agendamentos = agendamentos.Where(a => a.ServicoId == servicoId.Value);
+
+            // 5) Filtra pela DATA (ignorando horário)
+            if (data.HasValue) {
+                var dia = data.Value;
+                agendamentos = agendamentos.Where(a =>
+                    DateOnly.FromDateTime(a.DataHora) == dia
+                );
+            }
+
+            // 6) Retorna como DTO
+            return _mapper.Map<IEnumerable<AgendamentosDTO>>(agendamentos);
+        }
+
+        // =========================
+        // CREATE
+        // =========================
+        public async Task<AgendamentosDTO> CreateAsync(AgendamentosCreateDTO dto)
+        {
+            // Mapeia DTO -> Entidade
             var entity = _mapper.Map<Agendamento>(dto);
-            _repo.Create(entity);
 
-            var result = _mapper.Map<AgendamentosDTO>(entity);
-            return Task.FromResult(result);
+            // Regra de negócio: não permitir dois agendamentos no mesmo horário pro mesmo barbeiro
+            // (Você já tinha feito essa regra, aqui deixo de forma clara)
+            var conflito = await _agendamentoRepository.ExistsAsync(a =>
+                a.BarbeiroId == entity.BarbeiroId &&
+                a.DataHora == entity.DataHora
+            );
+
+            if (conflito)
+                throw new InvalidOperationException("Já existe um agendamento para este barbeiro neste mesmo horário.");
+
+            await _agendamentoRepository.AddAsync(entity);
+            await _agendamentoRepository.SaveChangesAsync();
+
+            return _mapper.Map<AgendamentosDTO>(entity);
         }
 
-        public Task<bool> UpdateAsync(int id, AgendamentosUpdateDTO dto)
+        // =========================
+        // UPDATE
+        // =========================
+        public async Task<bool> UpdateAsync(int id, AgendamentosUpdateDTO dto)
         {
-            var existing = _repo.GetById(id);
-            if (existing is null) return Task.FromResult(false);
+            var entity = await _agendamentoRepository.GetByIdAsync(id);
 
-            _mapper.Map(dto, existing);
-            _repo.Update(existing);
+            if (entity is null)
+                return false;
 
-            return Task.FromResult(true);
+            // Atualiza entidade com os dados do DTO
+            _mapper.Map(dto, entity);
+
+            // Regra de negócio: não permitir conflito
+            var conflito = await _agendamentoRepository.ExistsAsync(a =>
+                a.Id != id &&
+                a.BarbeiroId == entity.BarbeiroId &&
+                a.DataHora == entity.DataHora
+            );
+
+            if (conflito)
+                throw new InvalidOperationException("Já existe um agendamento para este barbeiro neste mesmo horário.");
+
+            _agendamentoRepository.Update(entity);
+            await _agendamentoRepository.SaveChangesAsync();
+
+            return true;
         }
 
-        public Task<bool> DeleteAsync(int id)
+        // =========================
+        // DELETE
+        // =========================
+        public async Task<bool> DeleteAsync(int id)
         {
-            var existing = _repo.GetById(id);
-            if (existing is null) return Task.FromResult(false);
+            var entity = await _agendamentoRepository.GetByIdAsync(id);
 
-            _repo.Delete(id);
-            return Task.FromResult(true);
+            if (entity is null)
+                return false;
+
+            _agendamentoRepository.Delete(entity);
+            await _agendamentoRepository.SaveChangesAsync();
+
+            return true;
         }
     }
 }

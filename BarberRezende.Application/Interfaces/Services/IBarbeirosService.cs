@@ -2,6 +2,10 @@
 
 namespace BarberRezende.Application.Interfaces.Services
 {
+    /// <summary>
+    /// Contrato do service de Barbeiros (camada Application).
+    /// Controller só conhece esta interface.
+    /// </summary>
     public interface IBarbeirosService
     {
         Task<IEnumerable<BarbeirosDTO>> GetAllAsync();

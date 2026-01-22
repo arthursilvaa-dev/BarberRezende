@@ -4,49 +4,109 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BarberRezende.API.Controllers
 {
+    /// <summary>
+    /// Endpoints HTTP (REST) de Agendamentos.
+    /// O Controller recebe a requisição e delega a execução para o Service.
+    /// </summary>
     [ApiController]
     [Route("api/[controller]")]
     public class AgendamentosController : ControllerBase
     {
-        private readonly IAgendamentosService _service;
+        private readonly IAgendamentosService _agendamentosService;
 
-        public AgendamentosController(IAgendamentosService service)
+        public AgendamentosController(IAgendamentosService agendamentosService)
         {
-            _service = service;
+            _agendamentosService = agendamentosService;
         }
 
+        /// <summary>
+        /// Lista todos os agendamentos.
+        /// </summary>
         [HttpGet]
-        public async Task<IActionResult> GetAll()
-            => Ok(await _service.GetAllAsync());
-
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById(int id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<AgendamentosDTO>>> GetAll()
         {
-            var result = await _service.GetByIdAsync(id);
-            if (result == null) return NotFound();
+            var result = await _agendamentosService.GetAllAsync();
             return Ok(result);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Create(AgendamentosCreateDTO dto)
+        /// <summary>
+        /// Lista agendamentos por filtros opcionais:
+        /// clienteId, barbeiroId, servicoId e data (apenas o dia).
+        /// Ex: /api/agendamentos/filter?clienteId=1&barbeiroId=2&data=2026-01-22
+        /// </summary>
+        [HttpGet("filter")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<AgendamentosDTO>>> GetByFilter(
+            [FromQuery] int? clienteId,
+            [FromQuery] int? barbeiroId,
+            [FromQuery] int? servicoId,
+            [FromQuery] DateOnly? data)
         {
-            var created = await _service.CreateAsync(dto);
+            var result = await _agendamentosService.GetByFilterAsync(clienteId, barbeiroId, servicoId, data);
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Busca um agendamento por Id.
+        /// </summary>
+        [HttpGet("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<AgendamentosDTO>> GetById(int id)
+        {
+            var result = await _agendamentosService.GetByIdAsync(id);
+
+            if (result is null)
+                return NotFound(new { message = $"Agendamento com Id={id} não encontrado." });
+
+            return Ok(result);
+        }
+
+        /// <summary>
+        /// Cria um novo agendamento.
+        /// Validações básicas (Required/Range) ficam no DTO com DataAnnotations.
+        /// Regras de negócio (ex: não duplicar horário pro mesmo barbeiro) ficam no Domain/Service.
+        /// </summary>
+        [HttpPost]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<AgendamentosDTO>> Create([FromBody] AgendamentosCreateDTO dto)
+        {
+            var created = await _agendamentosService.CreateAsync(dto);
             return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
         }
 
+        /// <summary>
+        /// Atualiza um agendamento.
+        /// </summary>
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, AgendamentosUpdateDTO dto)
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> Update(int id, [FromBody] AgendamentosUpdateDTO dto)
         {
-            var ok = await _service.UpdateAsync(id, dto);
-            if (!ok) return NotFound();
+            var updated = await _agendamentosService.UpdateAsync(id, dto);
+
+            if (!updated)
+                return NotFound(new { message = $"Agendamento com Id={id} não encontrado." });
+
             return NoContent();
         }
 
+        /// <summary>
+        /// Remove um agendamento.
+        /// </summary>
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete(int id)
         {
-            var ok = await _service.DeleteAsync(id);
-            if (!ok) return NotFound();
+            var deleted = await _agendamentosService.DeleteAsync(id);
+
+            if (!deleted)
+                return NotFound(new { message = $"Agendamento com Id={id} não encontrado." });
+
             return NoContent();
         }
     }
