@@ -1,24 +1,130 @@
-## Build results
+############################################
+# .NET / Visual Studio / ASP.NET Core
+############################################
+
+# Build results
+bin/
+obj/
 **/bin/
 **/obj/
 
-## Visual Studio
+# Debug / Release
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+arm/
+arm64/
+
+############################################
+# Visual Studio
+############################################
 .vs/
 *.user
 *.suo
+*.rsuser
 *.userosscache
 *.sln.docstates
 
-## Rider
+# Visual Studio cache / logs
+*.log
+*.tlog
+*.cache
+*.pdb
+*.ilk
+*.idb
+
+############################################
+# Rider / JetBrains
+############################################
 .idea/
 
-## Logs
-*.log
+############################################
+# VS Code (mantém configs úteis)
+############################################
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/extensions.json
 
-## OS
+############################################
+# ASP.NET Core
+############################################
+# Secrets / settings (não subir segredos)
+appsettings.*.json
+!appsettings.Development.json
+
+# Scaffolding
+ScaffoldingReadMe.txt
+
+############################################
+# Testes
+############################################
+TestResults/
+*.trx
+*.coverage
+*.coveragexml
+coverage*.json
+coverage*.xml
+coverage*.info
+
+############################################
+# Logs
+############################################
+logs/
+Logs/
+
+############################################
+# OS
+############################################
 .DS_Store
 Thumbs.db
 
-## Secrets (não subir segredos)
-appsettings.*.json
-!appsettings.Development.json
+############################################
+# NuGet
+############################################
+*.nupkg
+*.snupkg
+**/packages/*
+!**/packages/build/
+*.nuget.props
+*.nuget.targets
+
+############################################
+# Publish / Deploy
+############################################
+publish/
+*.publish.xml
+*.pubxml
+*.publishproj
+PublishScripts/
+
+############################################
+# Azure / Cloud
+############################################
+.azure/
+csx/
+*.build.csdef
+
+############################################
+# SQL Server
+############################################
+*.mdf
+*.ldf
+*.ndf
+
+############################################
+# Node (caso use no futuro)
+############################################
+node_modules/
+
+############################################
+# Outros
+############################################
+*.env
+*.pfx
+*.tmp
+*.bak
