@@ -1,0 +1,102 @@
+﻿@model BarberRezende.Web.Models.Agendamentos.AgendamentoCreatePageVm
+
+@{
+    ViewData["Title"] = "Novo Agendamento";
+}
+
+@if (!string.IsNullOrWhiteSpace(Model.ErrorMessage))
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+
+<h1 class="display-5 fw-bold mb-4">Novo Agendamento</h1>
+
+<form asp-action="Create" method="post" class="card p-4">
+    @Html.AntiForgeryToken()
+
+    <div class="row g-3">
+
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">Cliente</label>
+
+            <!-- (Opcional) campo de busca visual, se você já usa JS pra filtrar options -->
+            <input type="text" id="clienteSearch" class="form-control mb-2" placeholder="Digite para buscar..." />
+
+            <select class="form-select" asp-for="Form.ClienteId" asp-items="@(new SelectList(Model.Clientes, "Id", "Text"))">
+                <option value="">Selecione...</option>
+            </select>
+            <span class="text-danger" asp-validation-for="Form.ClienteId"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">Barbeiro</label>
+            <select class="form-select" asp-for="Form.BarbeiroId" asp-items="@(new SelectList(Model.Barbeiros, "Id", "Text"))">
+                <option value="">Selecione...</option>
+            </select>
+            <span class="text-danger" asp-validation-for="Form.BarbeiroId"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label class="form-label fw-semibold">Serviço</label>
+            <select class="form-select" asp-for="Form.ServicoId" asp-items="@(new SelectList(Model.Servicos, "Id", "Text"))">
+                <option value="">Selecione...</option>
+            </select>
+            <span class="text-danger" asp-validation-for="Form.ServicoId"></span>
+        </div>
+
+        <div class="col-md-6 mt-2">
+            <label class="form-label fw-semibold">Data e Hora</label>
+
+            <!-- datetime-local sem segundos, de 15 em 15 min -->
+            <input class="form-control"
+                   type="datetime-local"
+                   name="Form.DataHora"
+                   value="@Model.Form.DataHora.ToString("yyyy-MM-ddTHH:mm")"
+                   asp-for="Form.DataHora"
+                   step="900" />
+
+            <small class="text-muted d-block mt-1">
+                Permitido: de agora até 365 dias à frente. Horários de 15 em 15 minutos.
+            </small>
+
+            <span class="text-danger" asp-validation-for="Form.DataHora"></span>
+        </div>
+
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-primary btn-lg">Salvar</button>
+        <a asp-action="Index" class="btn btn-outline-secondary btn-lg">Voltar</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Busca simples no dropdown de clientes (filtra os options)
+        (function () {
+            const input = document.getElementById('clienteSearch');
+            const select = document.getElementById('Form_ClienteId') || document.querySelector('[name="Form.ClienteId"]');
+
+            if (!input || !select) return;
+
+            const all = Array.from(select.querySelectorAll('option'));
+            input.addEventListener('input', function () {
+                const term = (input.value || '').toLowerCase();
+
+                // mantém sempre o "Selecione..."
+                select.innerHTML = '';
+
+                all.forEach(opt => {
+                    if (opt.value === '') {
+                        select.appendChild(opt);
+                        return;
+                    }
+                    const text = (opt.textContent || '').toLowerCase();
+                    if (text.includes(term)) select.appendChild(opt);
+                });
+            });
+        })();
+    </script>
+}

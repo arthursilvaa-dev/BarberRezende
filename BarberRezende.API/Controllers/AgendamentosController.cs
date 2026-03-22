@@ -6,7 +6,11 @@ namespace BarberRezende.API.Controllers
 {
     /// <summary>
     /// Endpoints HTTP (REST) de Agendamentos.
-    /// O Controller recebe a requisição e delega a execução para o Service.
+    /// 
+    /// Responsabilidades:
+    /// - Receber requisições
+    /// - Delegar para o Service
+    /// - Traduzir exceções de negócio em respostas HTTP corretas
     /// </summary>
     [ApiController]
     [Route("api/[controller]")]
@@ -19,9 +23,9 @@ namespace BarberRezende.API.Controllers
             _agendamentosService = agendamentosService;
         }
 
-        /// <summary>
-        /// Lista todos os agendamentos.
-        /// </summary>
+        // =========================================================
+        // GET ALL
+        // =========================================================
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<AgendamentosDTO>>> GetAll()
@@ -30,11 +34,9 @@ namespace BarberRezende.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>
-        /// Lista agendamentos por filtros opcionais:
-        /// clienteId, barbeiroId, servicoId e data (apenas o dia).
-        /// Ex: /api/agendamentos/filter?clienteId=1&barbeiroId=2&data=2026-01-22
-        /// </summary>
+        // =========================================================
+        // GET BY FILTER
+        // =========================================================
         [HttpGet("filter")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<ActionResult<IEnumerable<AgendamentosDTO>>> GetByFilter(
@@ -43,13 +45,15 @@ namespace BarberRezende.API.Controllers
             [FromQuery] int? servicoId,
             [FromQuery] DateOnly? data)
         {
-            var result = await _agendamentosService.GetByFilterAsync(clienteId, barbeiroId, servicoId, data);
+            var result = await _agendamentosService
+                .GetByFilterAsync(clienteId, barbeiroId, servicoId, data);
+
             return Ok(result);
         }
 
-        /// <summary>
-        /// Busca um agendamento por Id.
-        /// </summary>
+        // =========================================================
+        // GET BY ID
+        // =========================================================
         [HttpGet("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -63,40 +67,60 @@ namespace BarberRezende.API.Controllers
             return Ok(result);
         }
 
-        /// <summary>
-        /// Cria um novo agendamento.
-        /// Validações básicas (Required/Range) ficam no DTO com DataAnnotations.
-        /// Regras de negócio (ex: não duplicar horário pro mesmo barbeiro) ficam no Domain/Service.
-        /// </summary>
+        // =========================================================
+        // CREATE
+        // =========================================================
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<AgendamentosDTO>> Create([FromBody] AgendamentosCreateDTO dto)
+        public async Task<ActionResult<AgendamentosDTO>> Create(
+            [FromBody] AgendamentosCreateDTO dto)
         {
-            var created = await _agendamentosService.CreateAsync(dto);
-            return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+            try {
+                var created = await _agendamentosService.CreateAsync(dto);
+
+                return CreatedAtAction(
+                    nameof(GetById),
+                    new { id = created.Id },
+                    created
+                );
+            }
+            catch (InvalidOperationException ex) {
+                // ⚠️ REGRA DE NEGÓCIO VIOLADA
+                // Ex: conflito de horário
+                return Conflict(new { message = ex.Message });
+            }
         }
 
-        /// <summary>
-        /// Atualiza um agendamento.
-        /// </summary>
+        // =========================================================
+        // UPDATE
+        // =========================================================
         [HttpPut("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> Update(int id, [FromBody] AgendamentosUpdateDTO dto)
+        [ProducesResponseType(StatusCodes.Status409Conflict)]
+        public async Task<IActionResult> Update(
+            int id,
+            [FromBody] AgendamentosUpdateDTO dto)
         {
-            var updated = await _agendamentosService.UpdateAsync(id, dto);
+            try {
+                var updated = await _agendamentosService.UpdateAsync(id, dto);
 
-            if (!updated)
-                return NotFound(new { message = $"Agendamento com Id={id} não encontrado." });
+                if (!updated)
+                    return NotFound(new { message = $"Agendamento com Id={id} não encontrado." });
 
-            return NoContent();
+                return NoContent();
+            }
+            catch (InvalidOperationException ex) {
+                // Regra de negócio violada
+                return Conflict(new { message = ex.Message });
+            }
         }
 
-        /// <summary>
-        /// Remove um agendamento.
-        /// </summary>
+        // =========================================================
+        // DELETE
+        // =========================================================
         [HttpDelete("{id:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

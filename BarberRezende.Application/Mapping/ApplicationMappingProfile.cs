@@ -95,15 +95,27 @@ namespace BarberRezende.Application.Mapping
             // AGENDAMENTOS
             // ==========================================================
 
-            CreateMap<Agendamento, AgendamentosDTO>()
-                .ForMember(dest => dest.ClienteNome,
-                    opt => opt.MapFrom(src => src.Cliente != null ? src.Cliente.Nome : string.Empty))
-                .ForMember(dest => dest.BarbeiroNome,
-                    opt => opt.MapFrom(src => src.Barbeiro != null ? src.Barbeiro.Nome : string.Empty))
-                .ForMember(dest => dest.ServicoNome,
-                    opt => opt.MapFrom(src => src.Servico != null ? src.Servico.Nome : string.Empty));
+            CreateMap<AgendamentosCreateDTO, Agendamento>()
+                .ForMember(dest => dest.DataHora,
+                    opt => opt.MapFrom(src => src.DataHora))
+                .ForMember(dest => dest.ClienteId,
+                    opt => opt.MapFrom(src => src.ClienteId))
+                .ForMember(dest => dest.BarbeiroId,
+                    opt => opt.MapFrom(src => src.BarbeiroId))
+                .ForMember(dest => dest.ServicoId,
+                    opt => opt.MapFrom(src => src.ServicoId))
 
-            CreateMap<AgendamentosCreateDTO, Agendamento>();
+                // 🔥 IGNORA SNAPSHOT (será preenchido no Service)
+                .ForMember(dest => dest.ClienteNomeSnapshot, opt => opt.Ignore())
+                .ForMember(dest => dest.BarbeiroNomeSnapshot, opt => opt.Ignore())
+                .ForMember(dest => dest.ServicoNomeSnapshot, opt => opt.Ignore())
+                .ForMember(dest => dest.PrecoSnapshot, opt => opt.Ignore())
+                .ForMember(dest => dest.DuracaoMinutosSnapshot, opt => opt.Ignore())
+
+                // navegações
+                .ForMember(dest => dest.Cliente, opt => opt.Ignore())
+                .ForMember(dest => dest.Barbeiro, opt => opt.Ignore())
+                .ForMember(dest => dest.Servico, opt => opt.Ignore());
         }
     }
 }

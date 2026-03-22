@@ -1,88 +1,80 @@
 ﻿using System.Net;
 using System.Text.Json;
-using BarberRezende.API.Errors;
-using BarberRezende.Domain.Exceptions;
+using BarberRezende.Application.Exceptions;
 
 namespace BarberRezende.API.Middlewares
 {
     /// <summary>
-    /// Middleware global de tratamento de exceções.
-    /// Ele intercepta erros não tratados e retorna um JSON padronizado.
+    /// Middleware global:
+    /// - Captura exceções
+    /// - Converte em JSON padronizado (ProblemDetails-like)
+    /// - Diferencia erro de negócio (409) de erro inesperado (500)
     /// </summary>
-    public class ExceptionHandlingMiddleware
+    public sealed class ExceptionHandlingMiddleware : IMiddleware
     {
-        private readonly RequestDelegate _next;
         private readonly ILogger<ExceptionHandlingMiddleware> _logger;
-        private readonly IHostEnvironment _env;
 
-        public ExceptionHandlingMiddleware(
-            RequestDelegate next,
-            ILogger<ExceptionHandlingMiddleware> logger,
-            IHostEnvironment env)
+        public ExceptionHandlingMiddleware(ILogger<ExceptionHandlingMiddleware> logger)
         {
-            _next = next;
             _logger = logger;
-            _env = env;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
             try {
-                // Executa o próximo middleware (e a pipeline toda).
-                await _next(context);
+                await next(context);
+            }
+            catch (BusinessRuleException ex) {
+                // Regra de negócio: não é bug do sistema, é conflito/restrição do domínio.
+                _logger.LogWarning(ex, "Business rule violation. TraceId: {TraceId}", context.TraceIdentifier);
+
+                await WriteProblemDetailsAsync(
+                    context,
+                    statusCode: HttpStatusCode.Conflict,
+                    title: "business_error",
+                    detail: ex.Message,
+                    exceptionType: nameof(BusinessRuleException)
+                );
             }
             catch (Exception ex) {
-                // Se algo explodir em qualquer lugar (controller/service/repository),
-                // caímos aqui e devolvemos um erro padronizado.
-                await HandleExceptionAsync(context, ex);
+                // Erro inesperado: isso é bug, ou infra, ou API caiu, etc.
+                _logger.LogError(ex, "Unexpected error. TraceId: {TraceId}", context.TraceIdentifier);
+
+                await WriteProblemDetailsAsync(
+                    context,
+                    statusCode: HttpStatusCode.InternalServerError,
+                    title: "unexpected_error",
+                    detail: "Erro inesperado. Tente novamente ou contate o suporte.",
+                    exceptionType: ex.GetType().Name
+                );
             }
         }
 
-        private async Task HandleExceptionAsync(HttpContext context, Exception ex)
+        private static async Task WriteProblemDetailsAsync(
+            HttpContext context,
+            HttpStatusCode statusCode,
+            string title,
+            string detail,
+            string exceptionType)
         {
-            // Logamos sempre o erro (no mínimo no console).
-            // Em empresas, isso iria para Application Insights, ELK, Datadog, etc.
-            _logger.LogError(ex, "Erro não tratado: {Message}", ex.Message);
+            context.Response.ContentType = "application/problem+json";
+            context.Response.StatusCode = (int)statusCode;
 
-            // Definimos o status code conforme o tipo do erro.
-            int statusCode = ex switch {
-                DomainException => (int)HttpStatusCode.BadRequest,   // 400
-                NotFoundException => (int)HttpStatusCode.NotFound,   // 404
-                _ => (int)HttpStatusCode.InternalServerError         // 500
+            // Objeto "ProblemDetails-like"
+            var payload = new
+            {
+                title,
+                status = (int)statusCode,
+                detail,
+                instance = context.Request.Path.ToString(),
+                traceId = context.TraceIdentifier,
+                exceptionType // em produção você pode remover para não expor detalhes
             };
 
-            // Mensagem: em produção, evite expor detalhes internos.
-            string message = ex switch {
-                DomainException => ex.Message,
-                NotFoundException => ex.Message,
-                _ => "Ocorreu um erro inesperado. Tente novamente mais tarde."
-            };
-
-            var errorResponse = new ApiErrorResponse {
-                StatusCode = statusCode,
-                Message = message,
-                TraceId = context.TraceIdentifier,
-
-                // Só em Development devolvemos detalhes.
-                Details = _env.IsDevelopment()
-                    ? new
-                    {
-                        exception = ex.GetType().Name,
-                        ex.Message,
-                        ex.StackTrace
-                    }
-                    : null
-            };
-
-            context.Response.ContentType = "application/json";
-            context.Response.StatusCode = statusCode;
-
-            // Serialização padronizada (camelCase fica mais “padrão REST”)
-            var jsonOptions = new JsonSerializerOptions {
+            var json = JsonSerializer.Serialize(payload, new JsonSerializerOptions {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-            };
+            });
 
-            var json = JsonSerializer.Serialize(errorResponse, jsonOptions);
             await context.Response.WriteAsync(json);
         }
     }

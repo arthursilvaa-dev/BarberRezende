@@ -1,0 +1,59 @@
+﻿@model List<BarberRezende.Web.Models.Clientes.ClienteVm>
+
+@{
+    ViewData["Title"] = "Clientes";
+}
+
+<form method="get" class="d-flex gap-2 mb-3">
+    <input type="text" name="q" value="@ViewBag.Query" class="form-control" placeholder="Buscar por nome, email ou telefone..." />
+    <button class="btn btn-dark">Buscar</button>
+    <a asp-action="Index" class="btn btn-outline-secondary">Limpar</a>
+</form>
+
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h1 class="mb-1">Clientes</h1>
+        <div class="text-muted">Use a busca para filtrar pelo nome, email ou telefone.</div>
+    </div>
+    <a class="btn btn-primary" href="@Url.Action("Create")">+ Novo Cliente</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+
+
+<table class="table table-hover align-middle" id="clientesTable">
+    <thead>
+
+        <tr>
+            <th>Id</th>
+            <th>Nome</th>
+            <th>Telefone</th>
+            <th>E-mail</th>
+            <th class="text-end">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+    @foreach (var c in Model)
+    {
+        <tr>
+            <td>@c.Id</td>
+            <td class="col-nome">@c.Nome</td>
+            <td class="col-tel">@c.Telefone</td>
+            <td class="col-email">@c.Email</td>
+            <td class="text-end">
+                <a class="btn btn-sm btn-outline-primary" href="@Url.Action("Edit", new { id = c.Id })">Editar</a>
+                <a class="btn btn-outline-danger btn-sm" href="@Url.Action("Delete", new { id = c.Id })">Remover</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script src="~/js/clientes.js"></script>
+}

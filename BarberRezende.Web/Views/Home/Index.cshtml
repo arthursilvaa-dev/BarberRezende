@@ -1,0 +1,81 @@
+﻿@*
+    Arquivo: BarberRezende.Web/Views/Home/Index.cshtml
+    Função: Dashboard inicial (atalhos para módulos)
+    Observação: Este HTML usa Bootstrap (via _Layout.cshtml)
+*@
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="p-4 p-md-5 bg-dark rounded-4 shadow shadow-lg text-white">
+    <!-- Título principal -->
+    <h1 class="display-5 fw-bold mb-2">Dashboard Administrativo</h1>
+
+    <!-- Subtítulo -->
+    <p class="text-dark mb-4">
+    Gerencie os módulos do sistema (clientes, serviços e agendamentos).
+    </p>
+
+    <!-- Grid de cards -->
+    <div class="row g-3 g-md-4">
+        <!-- Card: Clientes -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">Clientes</h5>
+                    <p class="card-text text-muted">
+                        Cadastrar, listar, editar e remover clientes.
+                    </p>
+
+                    <a class="btn btn-dark"
+                       asp-controller="Clientes"
+                       asp-action="Index">
+                        Abrir Clientes
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card: Serviços -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">Serviços</h5>
+                    <p class="card-text text-muted">
+                        Cadastrar, listar, editar e remover serviços.
+                    </p>
+
+                    <a class="btn btn-dark"
+                       asp-controller="Servicos"
+                       asp-action="Index">
+                        Abrir Serviços
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card: Agendamentos -->
+        <div class="col-12 col-md-4">
+            <div class="card h-100 border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">Agendamentos</h5>
+                    <p class="card-text text-muted">
+                        Criar e visualizar a agenda da barbearia.
+                    </p>
+
+                    <a class="btn btn-dark"
+                       asp-controller="Agendamentos"
+                       asp-action="Index">
+                        Abrir Agendamentos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dica / alerta -->
+    <div class="alert alert-info mt-4 mb-0">
+        <strong>Dica:</strong> cadastre Clientes e Serviços, e depois crie um Agendamento.
+    </div>
+</div>

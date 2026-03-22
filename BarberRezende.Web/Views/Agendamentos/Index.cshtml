@@ -1,0 +1,86 @@
+﻿@model BarberRezende.Web.Models.Agendamentos.AgendamentosIndexVm
+
+@{
+    ViewData["Title"] = "Agendamentos";
+}
+
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="display-5 fw-bold">Agendamentos</h1>
+
+    <a class="btn btn-dark btn-lg" asp-action="Create">
+        + Novo Agendamento
+    </a>
+</div>
+
+<h2 class="fw-bold mt-4 mb-3">Próximos</h2>
+
+<div class="table-responsive">
+    <table class="table table-striped align-middle" id="agendamentosProximos">
+
+        <thead>
+            <tr>
+                <th>Data/Hora</th>
+                <th>Cliente</th>
+                <th>Barbeiro</th>
+                <th>Serviço</th>
+                <th class="text-end">Preço</th>
+            </tr>
+        </thead>
+        <tbody>
+        @if (Model.Proximos.Count == 0)
+        {
+            <tr><td colspan="5" class="text-center text-muted">Nenhum agendamento próximo.</td></tr>
+        }
+        else
+        {
+            foreach (var a in Model.Proximos)
+            {
+                <tr>
+                    <td>@a.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@(a.ClienteNome ?? "-")</td>
+                    <td>@(a.BarbeiroNome ?? "-")</td>
+                    <td>@(a.ServicoNome ?? "-")</td>
+                    <td class="text-end">R$ @a.Preco.ToString("N2")</td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+</div>
+
+<h2 class="fw-bold mt-5 mb-3">Histórico (últimos 4 meses)</h2>
+
+<div class="table-responsive">
+    <table class="table table-striped align-middle" id="agendamentosHistorico">
+
+        <thead>
+            <tr>
+                <th>Data/Hora</th>
+                <th>Cliente</th>
+                <th>Barbeiro</th>
+                <th>Serviço</th>
+                <th class="text-end">Preço</th>
+            </tr>
+        </thead>
+        <tbody>
+        @if (Model.HistoricoUltimos4Meses.Count == 0)
+        {
+            <tr><td colspan="5" class="text-center text-muted">Nenhum agendamento no histórico recente.</td></tr>
+        }
+        else
+        {
+            foreach (var a in Model.HistoricoUltimos4Meses)
+            {
+                <tr>
+                    <td>@a.DataHora.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@(a.ClienteNome ?? "-")</td>
+                    <td>@(a.BarbeiroNome ?? "-")</td>
+                    <td>@(a.ServicoNome ?? "-")</td>
+                    <td class="text-end">R$ @a.Preco.ToString("N2")</td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+</div>

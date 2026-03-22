@@ -2,5 +2,13 @@
 
 namespace BarberRezende.Domain.Interfaces
 {
-    public interface IServicoRepository : IGenericRepository<Servico> { }
+    /// <summary>
+    /// Repositório específico de Serviços.
+    /// Herda o CRUD genérico e adiciona consultas específicas quando necessário.
+    /// </summary>
+    public interface IServicoRepository : IGenericRepository<Servico>
+    {
+        // Por enquanto, não precisamos de métodos extras.
+        // O GetByIdAsync do genérico já resolve para buscar DuracaoMinutos.
+    }
 }

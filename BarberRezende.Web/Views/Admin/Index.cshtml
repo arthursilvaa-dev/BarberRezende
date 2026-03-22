@@ -1,0 +1,33 @@
+﻿@{
+    ViewData["Title"] = "Dashboard Administrativo";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="p-4 bg-light rounded">
+    <h1 class="mb-3">Dashboard Administrativo</h1>
+    <p class="text-muted">Gerencie os módulos do sistema (clientes e agendamentos).</p>
+
+    <div class="row g-3 mt-2">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Clientes</h5>
+                    <p class="card-text">Cadastrar, listar, editar e remover clientes.</p>
+                    <a class="btn btn-dark" href="/Clientes">Abrir Clientes</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Agendamentos</h5>
+                    <p class="card-text">Criar e visualizar a agenda da barbearia.</p>
+                    <a class="btn btn-dark" href="/Agendamentos">Abrir Agendamentos</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <p class="mt-3"><strong>Dica:</strong> cadastre Clientes e depois crie um Agendamento.</p>
+</div>

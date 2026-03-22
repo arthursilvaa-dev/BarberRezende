@@ -1,19 +1,23 @@
 ﻿namespace BarberRezende.Application.DTOs.Agendamentos
 {
-    // DTO de retorno (READ) para listar/consultar agendamentos
     public class AgendamentosDTO
     {
         public int Id { get; set; }
         public DateTime DataHora { get; set; }
 
-        public int ClienteId { get; set; }
-        public string ClienteNome { get; set; } = string.Empty;
+        public int? ClienteId { get; set; }
+        public int? BarbeiroId { get; set; }
+        public int? ServicoId { get; set; }
 
-        public int BarbeiroId { get; set; }
-        public string BarbeiroNome { get; set; } = string.Empty;
+        // 🔥 SNAPSHOTS (fonte principal)
+        public string? ClienteNomeSnapshot { get; set; }
+        public string? BarbeiroNomeSnapshot { get; set; }
+        public string? ServicoNomeSnapshot { get; set; }
+        public decimal PrecoSnapshot { get; set; }
 
-        public int ServicoId { get; set; }
-        public string ServicoNome { get; set; } = string.Empty;
-        public decimal ServicoPreco { get; set; }
+        // (opcional) fallback atual
+        public string? ClienteNome { get; set; }
+        public string? BarbeiroNome { get; set; }
+        public string? ServicoNome { get; set; }
     }
 }

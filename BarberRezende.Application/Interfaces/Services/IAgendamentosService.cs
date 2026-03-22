@@ -4,9 +4,7 @@ namespace BarberRezende.Application.Interfaces.Services
 {
     /// <summary>
     /// Contrato do Service de Agendamentos.
-    /// 
-    /// Controller só conhece isso (abstração), não conhece repository nem DbContext.
-    /// Isso é Clean Architecture na prática.
+    /// Controller só conhece isso (abstração).
     /// </summary>
     public interface IAgendamentosService
     {

@@ -1,0 +1,32 @@
+﻿@model BarberRezende.Web.Models.Clientes.ClienteVm
+
+@{
+    ViewData["Title"] = "Excluir Cliente";
+}
+
+<h1 class="display-5 fw-bold mb-4">Excluir Cliente</h1>
+
+<div class="alert alert-warning rounded-4">
+    <strong>Atenção:</strong> ao excluir este cliente, agendamentos futuros vinculados a ele podem deixar de aparecer.
+    Agendamentos passados permanecem no histórico (últimos 4 meses).
+</div>
+
+<div class="card rounded-4 shadow-sm">
+    <div class="card-body">
+        <p><strong>Nome:</strong> @Model.Nome</p>
+        <p><strong>Email:</strong> @Model.Email</p>
+        <p><strong>Telefone:</strong> @Model.Telefone</p>
+
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+
+            <button type="submit" class="btn btn-danger btn-lg">
+                Confirmar Exclusão
+            </button>
+
+            <a asp-action="Index" class="btn btn-outline-secondary btn-lg ms-2">
+                Cancelar
+            </a>
+        </form>
+    </div>
+</div>

@@ -22,6 +22,32 @@ namespace BarberRezende.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("BarberRezende.Domain.Entities.AdminUser", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.ToTable("AdminUsers");
+                });
+
             modelBuilder.Entity("BarberRezende.Domain.Entities.Agendamento", b =>
                 {
                     b.Property<int>("Id")
@@ -30,25 +56,59 @@ namespace BarberRezende.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("BarbeiroId")
+                    b.Property<int?>("BarbeiroId")
                         .HasColumnType("int");
 
-                    b.Property<int>("ClienteId")
+                    b.Property<int?>("BarbeiroId1")
                         .HasColumnType("int");
+
+                    b.Property<string>("BarbeiroNomeSnapshot")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("ClienteId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ClienteId1")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClienteNomeSnapshot")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DataHora")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("ServicoId")
+                    b.Property<int>("DuracaoMinutosSnapshot")
                         .HasColumnType("int");
+
+                    b.Property<decimal>("PrecoSnapshot")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("ServicoId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("ServicoId1")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ServicoNomeSnapshot")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("BarbeiroId");
 
+                    b.HasIndex("BarbeiroId1");
+
                     b.HasIndex("ClienteId");
 
+                    b.HasIndex("ClienteId1");
+
                     b.HasIndex("ServicoId");
+
+                    b.HasIndex("ServicoId1");
 
                     b.ToTable("Agendamentos");
                 });
@@ -67,12 +127,11 @@ namespace BarberRezende.Infrastructure.Migrations
 
                     b.Property<string>("Nome")
                         .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Barbeiros", (string)null);
+                    b.ToTable("Barbeiros");
                 });
 
             modelBuilder.Entity("BarberRezende.Domain.Entities.Cliente", b =>
@@ -88,17 +147,15 @@ namespace BarberRezende.Infrastructure.Migrations
 
                     b.Property<string>("Nome")
                         .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Telefone")
                         .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Clientes", (string)null);
+                    b.ToTable("Clientes");
                 });
 
             modelBuilder.Entity("BarberRezende.Domain.Entities.Funcionario", b =>
@@ -114,16 +171,14 @@ namespace BarberRezende.Infrastructure.Migrations
 
                     b.Property<string>("Cargo")
                         .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("nvarchar(80)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("DataContratacao")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Nome")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Telefone")
                         .IsRequired()
@@ -147,36 +202,44 @@ namespace BarberRezende.Infrastructure.Migrations
 
                     b.Property<string>("Nome")
                         .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Preco")
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Servicos", (string)null);
+                    b.ToTable("Servicos");
                 });
 
             modelBuilder.Entity("BarberRezende.Domain.Entities.Agendamento", b =>
                 {
                     b.HasOne("BarberRezende.Domain.Entities.Barbeiro", "Barbeiro")
-                        .WithMany("Agendamentos")
+                        .WithMany()
                         .HasForeignKey("BarbeiroId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BarberRezende.Domain.Entities.Barbeiro", null)
+                        .WithMany("Agendamentos")
+                        .HasForeignKey("BarbeiroId1");
 
                     b.HasOne("BarberRezende.Domain.Entities.Cliente", "Cliente")
-                        .WithMany("Agendamentos")
+                        .WithMany()
                         .HasForeignKey("ClienteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BarberRezende.Domain.Entities.Cliente", null)
+                        .WithMany("Agendamentos")
+                        .HasForeignKey("ClienteId1");
 
                     b.HasOne("BarberRezende.Domain.Entities.Servico", "Servico")
-                        .WithMany("Agendamentos")
+                        .WithMany()
                         .HasForeignKey("ServicoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("BarberRezende.Domain.Entities.Servico", null)
+                        .WithMany("Agendamentos")
+                        .HasForeignKey("ServicoId1");
 
                     b.Navigation("Barbeiro");
 
