@@ -68,6 +68,19 @@ namespace BarberRezende.Web.Services
         public async Task<ApiResult<List<BarbeiroVm>>> GetBarbeirosAsync()
             => await GetAsync<List<BarbeiroVm>>("/api/barbeiros");
 
+        public async Task<ApiResult<BarbeiroVm>> GetBarbeiroByIdAsync(int id)
+            => await GetAsync<BarbeiroVm>($"/api/barbeiros/{id}");
+
+        public async Task<ApiResult<object>> CreateBarbeiroAsync(BarbeiroVm vm)
+            => await PostAsync("/api/barbeiros", vm);
+
+        public async Task<ApiResult<object>> UpdateBarbeiroAsync(int id, BarbeiroVm vm)
+            => await PutAsync($"/api/barbeiros/{id}", vm);
+
+        public async Task<ApiResult<object>> DeleteBarbeiroAsync(int id)
+            => await DeleteAsync($"/api/barbeiros/{id}");
+
+
         // =========================================================
         // SERVIÇOS
         // =========================================================
@@ -102,6 +115,9 @@ namespace BarberRezende.Web.Services
 
         public async Task<ApiResult<object>> UpdateAgendamentoAsync(int id, AgendamentoUpdateVm form)
             => await PutAsync($"/api/agendamentos/{id}", form);
+
+        public async Task<ApiResult<object>> DeleteAgendamentoAsync(int id)
+            => await DeleteAsync($"/api/agendamentos/{id}");
 
         // =========================================================
         // OPTIONS

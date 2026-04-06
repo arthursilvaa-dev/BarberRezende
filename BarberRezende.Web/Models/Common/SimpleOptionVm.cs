@@ -19,5 +19,8 @@ namespace BarberRezende.Web.Models.Common
 
         [JsonPropertyName("text")]
         public string Text { get; set; } = string.Empty;
+
+        // Nova propriedade para o JavaScript saber o tempo do serviço
+        public int DuracaoMinutos { get; set; }
     }
 }

@@ -138,9 +138,13 @@ namespace BarberRezende.Web.Controllers
                 .ToList();
 
             var servicos = (serRes.Data ?? new List<Models.Servicos.ServicoVm>())
-                .OrderBy(s => s.NomeServico)
-                .Select(s => new Models.Common.SimpleOptionVm { Id = s.Id, Text = s.NomeServico ?? $"Serviço #{s.Id}" })
-                .ToList();
+                 .OrderBy(s => s.NomeServico)
+                 .Select(s => new Models.Common.SimpleOptionVm {
+                     Id = s.Id,
+                     Text = s.NomeServico ?? $"Serviço #{s.Id}",
+                     DuracaoMinutos = s.DuracaoMinutos // Passando o valor para a tela!
+                       })
+                 .ToList();
 
             page.Clientes = clientes;
             page.Barbeiros = barbeiros;
@@ -166,14 +170,13 @@ namespace BarberRezende.Web.Controllers
             if (!ModelState.IsValid)
                 return View(page);
 
-            // 2) validar “grade” de 15 em 15 + sem segundos
+            // 2) validar sem segundos
             var dt = page.Form.DataHora;
 
-            if (dt.Second != 0 || dt.Millisecond != 0 || (dt.Minute % 15 != 0)) {
-                ModelState.AddModelError("Form.DataHora", "Escolha um horário válido (de 15 em 15 minutos).");
+            if (dt.Second != 0 || dt.Millisecond != 0) {
+                ModelState.AddModelError("Form.DataHora", "A hora enviada é inválida.");
                 return View(page);
             }
-
             // 3) validar limite de data: de agora até 365 dias
             var now = DateTime.Now;
             if (dt < now) {
@@ -294,11 +297,11 @@ namespace BarberRezende.Web.Controllers
             if (!ModelState.IsValid) return View(page);
 
             var dt = page.Form.DataHora;
-            if (dt.Second != 0 || dt.Millisecond != 0 || (dt.Minute % 15 != 0)) {
-                ModelState.AddModelError("Form.DataHora", "Escolha um horário válido (de 15 em 15 minutos).");
+
+            if (dt.Second != 0 || dt.Millisecond != 0) {
+                ModelState.AddModelError("Form.DataHora", "A hora enviada é inválida.");
                 return View(page);
             }
-
             // Idealmente, a validação de conflito de agenda deve ficar na API (Domain/Application layer).
             // Como a API retornará um erro 409 Conflict se der problema, nós apenas repassamos a mensagem amigável:
             var updateRes = await _api.UpdateAgendamentoAsync(id, page.Form);
@@ -311,6 +314,70 @@ namespace BarberRezende.Web.Controllers
             TempData["Success"] = "Agendamento atualizado com sucesso!";
             return RedirectToAction(nameof(Index));
         }
+
+        // =========================
+        // CANCELAR (DELETE) POST
+        // =========================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var res = await _api.DeleteAgendamentoAsync(id);
+
+            if (res.Success) {
+                TempData["Success"] = "Agendamento cancelado e removido com sucesso!";
+            }
+            else {
+                TempData["Error"] = res.FriendlyMessage ?? "Erro ao cancelar o agendamento.";
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+
+
+        // =========================
+        // AJAX: CONSULTA DE HORÁRIOS OCUPADOS
+        // =========================
+        [HttpGet]
+        public async Task<IActionResult> GetHorariosOcupados(int barbeiroId, string dataSelecionada)
+        {
+            if (!DateTime.TryParse(dataSelecionada, out var data))
+                return Json(new List<object>()); // Retorna lista vazia se a data for inválida
+
+            var agRes = await _api.GetAgendamentosAsync();
+            var servRes = await _api.GetServicosAsync();
+
+            if (!agRes.Success || !servRes.Success)
+                return Json(new List<object>());
+
+            var servicos = servRes.Data ?? new List<Models.Servicos.ServicoVm>();
+            var agendamentos = agRes.Data ?? new List<Models.Agendamentos.AgendamentoListItemVm>();
+
+            var duracaoByServicoId = servicos.ToDictionary(s => s.Id, s => s.DuracaoMinutos);
+
+            // Filtra agendamentos apenas do barbeiro específico, no dia específico
+            var ocupados = agendamentos
+                .Where(a => a.BarbeiroId == barbeiroId && a.DataHora.Date == data.Date)
+                .Select(a => {
+                    // Descobre a duração daquele atendimento específico
+                    int duracao = 30;
+                    if (a.ServicoId.HasValue && duracaoByServicoId.TryGetValue(a.ServicoId.Value, out var d) && d > 0)
+                        duracao = d;
+
+                    return new
+                    {
+                        inicio = a.DataHora,
+                        fim = a.DataHora.AddMinutes(duracao) // Fim exato daquele corte/barba
+                    };
+                })
+                .ToList();
+
+            return Json(ocupados); // Devolve para o JavaScript
+        }
+
+
+
 
         // Helper adaptado para suportar tanto CreatePageVm quanto UpdatePageVm
         private async Task FillDropdownsAsync(dynamic page)

@@ -11,17 +11,13 @@
 
 <h1 class="display-5 fw-bold mb-4">Novo Agendamento</h1>
 
-<form asp-action="Create" method="post" class="card p-4">
+<form asp-action="Create" method="post" class="card p-4 shadow-sm">
     @Html.AntiForgeryToken()
 
     <div class="row g-3">
-
         <div class="col-md-4">
             <label class="form-label fw-semibold">Cliente</label>
-
-            <!-- (Opcional) campo de busca visual, se você já usa JS pra filtrar options -->
             <input type="text" id="clienteSearch" class="form-control mb-2" placeholder="Digite para buscar..." />
-
             <select class="form-select" asp-for="Form.ClienteId" asp-items="@(new SelectList(Model.Clientes, "Id", "Text"))">
                 <option value="">Selecione...</option>
             </select>
@@ -38,34 +34,34 @@
 
         <div class="col-md-4">
             <label class="form-label fw-semibold">Serviço</label>
-            <select class="form-select" asp-for="Form.ServicoId" asp-items="@(new SelectList(Model.Servicos, "Id", "Text"))">
-                <option value="">Selecione...</option>
+            <select class="form-select" asp-for="Form.ServicoId" id="ServicoSelect">
+                <option value="" data-duracao="0">Selecione...</option>
+                @foreach(var servico in Model.Servicos)
+                {
+                    <option value="@servico.Id" data-duracao="@servico.DuracaoMinutos">@servico.Text</option>
+                }
             </select>
             <span class="text-danger" asp-validation-for="Form.ServicoId"></span>
         </div>
 
-        <div class="col-md-6 mt-2">
-            <label class="form-label fw-semibold">Data e Hora</label>
+        <input type="hidden" asp-for="Form.DataHora" id="DataHoraOculta" />
 
-            <!-- datetime-local sem segundos, de 15 em 15 min -->
-            <input class="form-control"
-                   type="datetime-local"
-                   name="Form.DataHora"
-                   value="@Model.Form.DataHora.ToString("yyyy-MM-ddTHH:mm")"
-                   asp-for="Form.DataHora"
-                   step="900" />
-
-            <small class="text-muted d-block mt-1">
-                Permitido: de agora até 365 dias à frente. Horários de 15 em 15 minutos.
-            </small>
-
-            <span class="text-danger" asp-validation-for="Form.DataHora"></span>
+        <div class="mb-4 mt-4">
+            <label class="form-label fw-bold">Escolha a Data</label>
+            <input type="date" id="DataVisual" class="form-control form-control-lg" min="@DateTime.Now.ToString("yyyy-MM-dd")" />
         </div>
 
+        <div class="mb-4">
+            <label class="form-label fw-bold">Horários Disponíveis</label>
+            <div id="ContainerHorarios" class="d-flex flex-wrap gap-2">
+                <span class="text-muted small">Selecione o serviço e a data primeiro.</span>
+            </div>
+            <span asp-validation-for="Form.DataHora" class="text-danger small mt-1 d-block"></span>
+        </div>
     </div>
 
     <div class="mt-4 d-flex gap-2">
-        <button type="submit" class="btn btn-primary btn-lg">Salvar</button>
+        <button type="submit" class="btn btn-primary btn-lg px-4">Salvar</button>
         <a asp-action="Index" class="btn btn-outline-secondary btn-lg">Voltar</a>
     </div>
 </form>
@@ -74,29 +70,127 @@
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        // Busca simples no dropdown de clientes (filtra os options)
-        (function () {
-            const input = document.getElementById('clienteSearch');
-            const select = document.getElementById('Form_ClienteId') || document.querySelector('[name="Form.ClienteId"]');
+        document.addEventListener("DOMContentLoaded", function () {
+            
+            // 1. Script de Busca de Clientes
+            const inputBusca = document.getElementById('clienteSearch');
+            const selectCliente = document.querySelector('[name="Form.ClienteId"]');
 
-            if (!input || !select) return;
-
-            const all = Array.from(select.querySelectorAll('option'));
-            input.addEventListener('input', function () {
-                const term = (input.value || '').toLowerCase();
-
-                // mantém sempre o "Selecione..."
-                select.innerHTML = '';
-
-                all.forEach(opt => {
-                    if (opt.value === '') {
-                        select.appendChild(opt);
-                        return;
-                    }
-                    const text = (opt.textContent || '').toLowerCase();
-                    if (text.includes(term)) select.appendChild(opt);
+            if (inputBusca && selectCliente) {
+                const todasOpcoes = Array.from(selectCliente.querySelectorAll('option'));
+                inputBusca.addEventListener('input', function () {
+                    const termo = (inputBusca.value || '').toLowerCase();
+                    selectCliente.innerHTML = '';
+                    todasOpcoes.forEach(opt => {
+                        if (opt.value === '' || (opt.textContent || '').toLowerCase().includes(termo)) {
+                            selectCliente.appendChild(opt);
+                        }
+                    });
                 });
-            });
-        })();
+            }
+
+            // 2. Script de Geração de Horários Dinâmicos (Estilo Booksy)
+            const dataVisual = document.getElementById("DataVisual");
+            const containerHorarios = document.getElementById("ContainerHorarios");
+            const dataHoraOculta = document.getElementById("DataHoraOculta");
+            const selectServico = document.getElementById("ServicoSelect");
+            const selectBarbeiro = document.querySelector('[name="Form.BarbeiroId"]'); // NOVO: Precisamos saber o barbeiro!
+
+            const horaAbertura = 9; // 09:00
+            const horaFechamento = 18; // 18:00
+
+            function atualizarHorarios() {
+                containerHorarios.innerHTML = ""; 
+                dataHoraOculta.value = ""; 
+
+                const dataSelecionada = dataVisual.value;
+                const barbeiroId = selectBarbeiro.value;
+                const opcaoServicoSelecionada = selectServico.options[selectServico.selectedIndex];
+                const duracao = parseInt(opcaoServicoSelecionada.getAttribute("data-duracao")) || 0;
+
+                // Agora exige Data, Serviço E Barbeiro
+                if (!dataSelecionada || duracao === 0 || !barbeiroId) {
+                    containerHorarios.innerHTML = '<span class="text-muted small">Selecione o Barbeiro, o Serviço e a Data primeiro.</span>';
+                    return;
+                }
+
+                containerHorarios.innerHTML = '<span class="text-muted small spinner-border spinner-border-sm me-2"></span> Carregando horários disponíveis...';
+
+                // Dispara a requisição silenciosa (AJAX) para o C#
+                fetch(`/Agendamentos/GetHorariosOcupados?barbeiroId=${barbeiroId}&dataSelecionada=${dataSelecionada}`)
+                    .then(response => response.json())
+                    .then(ocupados => {
+                        containerHorarios.innerHTML = ""; // Limpa o "Carregando"
+                        gerarBotoesHorario(dataSelecionada, duracao, ocupados);
+                    })
+                    .catch(err => {
+                        containerHorarios.innerHTML = '<span class="text-danger small">Erro ao carregar agenda. Tente novamente.</span>';
+                    });
+            }
+
+            // Refaz a lista se o usuário mudar a data, o serviço ou o barbeiro!
+            dataVisual.addEventListener("change", atualizarHorarios);
+            selectServico.addEventListener("change", atualizarHorarios);
+            selectBarbeiro.addEventListener("change", atualizarHorarios);
+
+            // FUNÇÃO ATUALIZADA: Estilo Visual de Alta Visibilidade (Inspirado no Booksy)
+            function gerarBotoesHorario(dataSelecionada, intervaloMinutos, ocupados) {
+                let tempoAtual = new Date(`${dataSelecionada}T${horaAbertura.toString().padStart(2, '0')}:00`);
+                const tempoFim = new Date(`${dataSelecionada}T${horaFechamento.toString().padStart(2, '0')}:00`);
+
+                while (tempoAtual <= tempoFim) {
+                    const btnInicio = new Date(tempoAtual);
+                    const btnFim = new Date(tempoAtual);
+                    btnFim.setMinutes(btnFim.getMinutes() + intervaloMinutos);
+
+                    const horaFormatada = tempoAtual.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                    
+                    const isOcupado = ocupados.some(o => {
+                        const oInicio = new Date(o.inicio);
+                        const oFim = new Date(o.fim);
+                        return btnInicio < oFim && oInicio < btnFim;
+                    });
+
+                    const btn = document.createElement("button");
+                    btn.type = "button";
+                    btn.innerText = horaFormatada;
+
+                    if (isOcupado) {
+                        // --- ESTILO OCUPADO (Escuro/Inativo) ---
+                        // Usamos btn-secondary para fundo cinza escuro sólido.
+                        // Removemos borda e riscamos o texto para clareza máxima de inatividade.
+                        btn.className = "btn btn-secondary px-4 py-2 fw-bold border-0 opacity-50";
+                        btn.disabled = true;
+                        btn.style.textDecoration = "line-through";
+                        btn.title = "Horário indisponível (já agendado)";
+                    } else {
+                        // --- ESTILO DISPONÍVEL (Claro/Alta Visibilidade) ---
+                        // Usamos btn-outline-success (Verde). A borda e o texto ficam verdes fortes
+                        // sobre o fundo branco, garantindo leitura fácil.
+                        btn.className = "btn btn-outline-success px-4 py-2 fw-bold border-2"; // Borda mais grossa (border-2)
+                        
+                        btn.addEventListener("click", function () {
+                            // Reseta apenas os botões disponíveis (não desabilitados)
+                            document.querySelectorAll("#ContainerHorarios .btn:not(:disabled)").forEach(b => {
+                                // Remove estado Ativo (Verde Sólido) e volta para Outline
+                                b.classList.remove("active", "btn-success", "text-white");
+                                b.classList.add("btn-outline-success", "border-2");
+                            });
+
+                            // --- ESTILO SELECIONADO (Destaque Sólido) ---
+                            // Transforma o botão em Verde Sólido com texto Branco.
+                            this.classList.remove("btn-outline-success", "border-2");
+                            this.classList.add("active", "btn-success", "text-white");
+
+                            dataHoraOculta.value = `${dataSelecionada}T${horaFormatada}:00`;
+                        });
+                    }
+
+                    containerHorarios.appendChild(btn);
+                    tempoAtual.setMinutes(tempoAtual.getMinutes() + intervaloMinutos);
+                }
+            }
+        });
     </script>
 }
+    

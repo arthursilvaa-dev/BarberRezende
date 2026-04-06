@@ -68,7 +68,7 @@ namespace BarberRezende.Web.Controllers
 
             Console.WriteLine("TOKEN SALVO COM SUCESSO");
 
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Admin");
         }
 
         public IActionResult Logout()
