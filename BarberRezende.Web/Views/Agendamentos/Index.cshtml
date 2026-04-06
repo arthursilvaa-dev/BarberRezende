@@ -25,12 +25,13 @@
                 <th>Barbeiro</th>
                 <th>Serviço</th>
                 <th class="text-end">Preço</th>
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
         @if (Model.Proximos.Count == 0)
         {
-            <tr><td colspan="5" class="text-center text-muted">Nenhum agendamento próximo.</td></tr>
+            <tr><td colspan="6" class="text-center text-muted">Nenhum agendamento próximo.</td></tr>
         }
         else
         {
@@ -42,6 +43,9 @@
                     <td>@(a.BarbeiroNome ?? "-")</td>
                     <td>@(a.ServicoNome ?? "-")</td>
                     <td class="text-end">R$ @a.Preco.ToString("N2")</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@a.Id">Editar</a>
+                    </td>
                 </tr>
             }
         }

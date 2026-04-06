@@ -1,0 +1,64 @@
+﻿@model BarberRezende.Web.Models.Agendamentos.AgendamentoUpdatePageVm
+
+@{
+    ViewData["Title"] = "Editar Agendamento";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow-sm mt-4">
+            <div class="card-body p-4">
+                <h2 class="card-title mb-4">Editar Agendamento</h2>
+
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-danger">@Model.ErrorMessage</div>
+                }
+
+                <form asp-action="Edit" method="post">
+                    <input type="hidden" asp-for="Form.Id" />
+
+                    <div class="mb-3">
+                        <label asp-for="Form.DataHora" class="form-label fw-bold">Data e Hora</label>
+                        <input asp-for="Form.DataHora" class="form-control" type="datetime-local" step="900" />
+                        <span asp-validation-for="Form.DataHora" class="text-danger small"></span>
+                        <div class="form-text">Horários de 15 em 15 minutos.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Form.ClienteId" class="form-label fw-bold">Cliente</label>
+                        <select asp-for="Form.ClienteId" class="form-select" asp-items="@(new SelectList(Model.Clientes, "Id", "Text"))">
+                            <option value="">-- Selecione o Cliente --</option>
+                        </select>
+                        <span asp-validation-for="Form.ClienteId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label asp-for="Form.BarbeiroId" class="form-label fw-bold">Barbeiro</label>
+                        <select asp-for="Form.BarbeiroId" class="form-select" asp-items="@(new SelectList(Model.Barbeiros, "Id", "Text"))">
+                            <option value="">-- Selecione o Barbeiro --</option>
+                        </select>
+                        <span asp-validation-for="Form.BarbeiroId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Form.ServicoId" class="form-label fw-bold">Serviço</label>
+                        <select asp-for="Form.ServicoId" class="form-select" asp-items="@(new SelectList(Model.Servicos, "Id", "Text"))">
+                            <option value="">-- Selecione o Serviço --</option>
+                        </select>
+                        <span asp-validation-for="Form.ServicoId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-outline-secondary">Cancelar</a>
+                        <button type="submit" class="btn btn-primary px-4">Salvar Alterações</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

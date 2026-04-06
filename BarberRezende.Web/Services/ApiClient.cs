@@ -97,6 +97,12 @@ namespace BarberRezende.Web.Services
         public async Task<ApiResult<object>> CreateAgendamentoAsync(AgendamentoCreateVm form)
             => await PostAsync("/api/agendamentos", form);
 
+        public async Task<ApiResult<AgendamentoUpdateVm>> GetAgendamentoByIdAsync(int id)
+            => await GetAsync<AgendamentoUpdateVm>($"/api/agendamentos/{id}");
+
+        public async Task<ApiResult<object>> UpdateAgendamentoAsync(int id, AgendamentoUpdateVm form)
+            => await PutAsync($"/api/agendamentos/{id}", form);
+
         // =========================================================
         // OPTIONS
         // =========================================================

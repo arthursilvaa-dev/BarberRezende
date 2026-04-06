@@ -95,6 +95,13 @@ namespace BarberRezende.Application.Mapping
             // AGENDAMENTOS
             // ==========================================================
 
+            // 1. Entity -> DTO (GET - Necessário para listar os dados)
+            CreateMap<Agendamento, AgendamentosDTO>();
+
+            // 2. DTO -> Entity (PUT - Necessário para atualizar um agendamento)
+            CreateMap<AgendamentosUpdateDTO, Agendamento>();
+
+            // 3. DTO -> Entity (POST - O que você já havia feito com os ignores)
             CreateMap<AgendamentosCreateDTO, Agendamento>()
                 .ForMember(dest => dest.DataHora,
                     opt => opt.MapFrom(src => src.DataHora))

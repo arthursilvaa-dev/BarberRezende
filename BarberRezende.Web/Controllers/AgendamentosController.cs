@@ -262,6 +262,78 @@ namespace BarberRezende.Web.Controllers
         }
 
         // =========================
+        // EDIT GET
+        // =========================
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var res = await _api.GetAgendamentoByIdAsync(id);
+            if (!res.Success || res.Data == null) {
+                TempData["Error"] = "Agendamento não encontrado.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            var page = new AgendamentoUpdatePageVm {
+                Form = res.Data // Popula o formulário com os dados da API
+            };
+
+            // Reaproveita seu helper para preencher os dropdowns!
+            await FillDropdownsAsync(page);
+            return View(page);
+        }
+
+        // =========================
+        // EDIT POST
+        // =========================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(int id, AgendamentoUpdatePageVm page)
+        {
+            await FillDropdownsAsync(page);
+
+            if (!ModelState.IsValid) return View(page);
+
+            var dt = page.Form.DataHora;
+            if (dt.Second != 0 || dt.Millisecond != 0 || (dt.Minute % 15 != 0)) {
+                ModelState.AddModelError("Form.DataHora", "Escolha um horário válido (de 15 em 15 minutos).");
+                return View(page);
+            }
+
+            // Idealmente, a validação de conflito de agenda deve ficar na API (Domain/Application layer).
+            // Como a API retornará um erro 409 Conflict se der problema, nós apenas repassamos a mensagem amigável:
+            var updateRes = await _api.UpdateAgendamentoAsync(id, page.Form);
+
+            if (!updateRes.Success) {
+                page.ErrorMessage = updateRes.FriendlyMessage ?? "Conflito de horário ou erro ao atualizar.";
+                return View(page);
+            }
+
+            TempData["Success"] = "Agendamento atualizado com sucesso!";
+            return RedirectToAction(nameof(Index));
+        }
+
+        // Helper adaptado para suportar tanto CreatePageVm quanto UpdatePageVm
+        private async Task FillDropdownsAsync(dynamic page)
+        {
+            var cliRes = await _api.GetClientesAsync();
+            var barRes = await _api.GetBarbeirosAsync();
+            var serRes = await _api.GetServicosAsync();
+
+            page.Clientes = (cliRes.Data ?? new List<Models.Clientes.ClienteVm>())
+                .OrderBy(c => c.Nome)
+                .Select(c => new Models.Common.SimpleOptionVm { Id = c.Id, Text = c.Nome ?? $"Cliente #{c.Id}" }).ToList();
+
+            page.Barbeiros = (barRes.Data ?? new List<Models.Barbeiros.BarbeiroVm>())
+                .OrderBy(b => b.Nome)
+                .Select(b => new Models.Common.SimpleOptionVm { Id = b.Id, Text = b.Nome ?? $"Barbeiro #{b.Id}" }).ToList();
+
+            page.Servicos = (serRes.Data ?? new List<Models.Servicos.ServicoVm>())
+                .OrderBy(s => s.NomeServico)
+                .Select(s => new Models.Common.SimpleOptionVm { Id = s.Id, Text = s.NomeServico ?? $"Serviço #{s.Id}" }).ToList();
+        }
+
+
+        // =========================
         // helpers
         // =========================
         private static DateTime RoundUpTo15Minutes(DateTime dt)
