@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-// Removi o using que estava dando erro e usei referências diretas abaixo
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,36 +70,10 @@ builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
     };
 });
 
-// ================= 5. SWAGGER (CONFIGURAÇÃO SIMPLIFICADA) =================
+// ================= 5. SWAGGER (VERSÃO ULTRA-SIMPLIFICADA) =================
+// Apenas registra o gerador padrão, sem configurações avançadas de Auth por enquanto
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "BarberRezende API", Version = "v1" });
-
-    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-    {
-        Description = "JWT Authorization header usando o esquema Bearer. Exemplo: \"Bearer {token}\"",
-        Name = "Authorization",
-        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
-        Scheme = "bearer"
-    });
-
-    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
-        {
-            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
-            {
-                Reference = new Microsoft.OpenApi.Models.OpenApiReference
-                {
-                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                }
-            },
-            new string[] { }
-        }
-    });
-});
+builder.Services.AddSwaggerGen(); 
 
 // ================= 6. JWT & AUTENTICAÇÃO =================
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
@@ -134,16 +107,9 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 // ================= 7. PIPELINE (MIDDLEWARES) =================
-
-// Habilita o Swagger em qualquer ambiente para podermos testar no MonsterASP
 app.UseSwagger();
-app.UseSwaggerUI(c =>
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "BarberRezende API V1");
-    c.RoutePrefix = "swagger"; // Define que o swagger abre em /swagger
-});
+app.UseSwaggerUI();
 
-// Redireciona a raiz para o swagger
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.UseCors("CorsDev");
