@@ -191,12 +191,12 @@ using (var scope = app.Services.CreateScope()) {
 
 
 // ================= PIPELINE (ORDEM IMPORTA) =================
-if (app.Environment.IsDevelopment()) {
+ 
     app.UseSwagger();
     app.UseSwaggerUI();
 
     app.MapGet("/", () => Results.Redirect("/swagger"));
-}
+
 
 // CORS
 app.UseCors("CorsDev");
