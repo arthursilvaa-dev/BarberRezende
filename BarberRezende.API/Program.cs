@@ -223,24 +223,24 @@ Console.WriteLine("HASH GERADA:");
 Console.WriteLine(hash);
 
 // --- BLOCO DE AUTO-MIGRAÇÃO ---
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    try
-    {
-        var context = services.GetRequiredService<BarberRezende.Infrastructure.Data.BarberRezendeDbContext>();
-        // Isso aplica as migrations no banco do MonsterASP automaticamente
-        await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(context.Database);
+// using (var scope = app.Services.CreateScope())
+// {
+//     var services = scope.ServiceProvider;
+//     try
+//     {
+//         var context = services.GetRequiredService<BarberRezende.Infrastructure.Data.BarberRezendeDbContext>();
+//         // Isso aplica as migrations no banco do MonsterASP automaticamente
+//         await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(context.Database);
         
-        //await BarberRezende.Infrastructure.Seed.SeedService.SeedAsync(context);
+//         //await BarberRezende.Infrastructure.Seed.SeedService.SeedAsync(context);
         
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Erro ao aplicar as migrações no banco de dados.");
-    }
-}
+//     }
+//     catch (Exception ex)
+//     {
+//         var logger = services.GetRequiredService<ILogger<Program>>();
+//         logger.LogError(ex, "Erro ao aplicar as migrações no banco de dados.");
+//     }
+// }
 // ------------------------------
 
 app.Run();
