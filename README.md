@@ -1,118 +1,48 @@
-# BarberRezende — API de Gestão de Barbearia
+# 🦁 BarberRezende — Solução Corporativa de Gestão de Barbearia
+Sistema Full-Stack de alto nível desenvolvido com o ecossistema .NET 9, composto por uma API REST robusta e uma aplicação Web MVC dinâmica. O projeto foi concebido sob rigorosos padrões de engenharia para resolver desafios complexos de agendamento e gestão financeira em cenários reais.
 
-API REST desenvolvida em **ASP.NET Core** com **Entity Framework Core**, focada na gestão completa de uma barbearia, permitindo o controle de **clientes**, **barbeiros**, **serviços**, **funcionários** e **agendamentos**.
+## 🛠️ Stack Tecnológica & Diferenciais Técnicos
+Linguagem & Framework: C# com .NET 9 (LTS).
 
-Este projeto foi criado com o objetivo de aplicar boas práticas de **Clean Architecture**, **SOLID**, separação de responsabilidades e regras de negócio bem definidas, simulando um cenário real de aplicação corporativa.
+Arquitetura: Clean Architecture com separação rigorosa de responsabilidades em camadas (Domain, Application, Infrastructure, API, Web).
 
----
+Persistência: Entity Framework Core com SQL Server, utilizando Fluent API para mapeamentos granulares e snapshots de dados.
 
-## 🎯 Objetivo do Projeto
+Segurança: Autenticação e Autorização baseadas em JWT (JSON Web Token).
 
-O objetivo principal deste projeto é:
+Boas Práticas: Aplicação de princípios SOLID, DRY, Async/Await para alta escalabilidade e AutoMapper para transformação segura de objetos.
 
-- Consolidar conhecimentos em **Back-end .NET**
-- Aplicar **arquitetura limpa (clean architecture)** em um sistema real
-- Desenvolver uma **API REST profissional**, pronta para ser consumida por qualquer front-end
-- Criar uma base sólida para evolução futura (autenticação, front-end, integrações externas)
+Resiliência: Middleware customizado para tratamento global de exceções padronizado com ProblemDetails.
 
----
+### 🌟 Funcionalidades de Negócio
+Dashboard Administrativo: Painel dinâmico com métricas de faturamento mensal (atual vs histórico) e indicadores operacionais em tempo real.
 
-## ✅ Funcionalidades Implementadas
+Agendamento Premium (UX): Interface moderna inspirada no Booksy, com calendário visual e seleção dinâmica de horários baseada na duração real de cada serviço (45min, 30min, 1h, etc.).
 
-- CRUD completo de:
-  - Clientes
-  - Barbeiros
-  - Serviços
-  - Funcionários
-  - Agendamentos
-- Regras de negócio centralizadas no **Domain**
-  - ❌ Não permite dois agendamentos no mesmo horário para o mesmo barbeiro
-- Filtros avançados de agendamentos
-- Validações de dados
-- Documentação interativa com **Swagger**
-- Banco de dados SQL Server com **migrations**
-- Testes manuais completos via Swagger
+Regras de Domínio: Motor de validação para prevenção de conflitos de agenda por profissional e garantia de integridade financeira via Snapshots.
 
----
+Gestão de Equipe e Catálogo: CRUDs completos com filtros dinâmicos para Barbeiros, Clientes e Serviços.
 
-## 🧱 Arquitetura Utilizada — Clean Architecture
+#### 📖 Como Executar o Projeto
+Pré-requisitos:
+.NET SDK 9.0
 
-O projeto segue os princípios da **Clean Architecture**, separando responsabilidades por camadas:
+SQL Server (LocalDB ou superior)
 
-### 🔹 Domain
-Camada central do sistema (o coração da aplicação).
+Clonagem e Configuração:
 
-Responsável por:
-- Entidades
-- Regras de negócio
-- Interfaces de repositórios
-
-> O Domain **não depende de nenhuma outra camada**.
-
----
-
-### 🔹 Application
-Camada responsável pela **orquestração da aplicação**.
-
-Responsável por:
-- DTOs (Data Transfer Objects)
-- Services (casos de uso)
-- Validações
-- Mapeamentos (AutoMapper)
-
-> Aqui fica a lógica de aplicação, mas **não regras de negócio puras**.
-
----
-
-### 🔹 Infrastructure
-Camada de infraestrutura e acesso a dados.
-
-Responsável por:
-- Entity Framework Core
-- DbContext
-- Repositórios
-- Migrations
-- Comunicação com o banco de dados
-
----
-
-### 🔹 API
-Camada de entrada da aplicação.
-
-Responsável por:
-- Controllers (endpoints HTTP)
-- Configuração do app
-- Swagger
-- Middlewares
-- Injeção de dependência
-
-> A API apenas **recebe a requisição, valida e delega** para a Application.
-
----
-
-## 🔄 Padrão REST e Métodos HTTP
-
-A API segue o padrão **REST**, utilizando os métodos HTTP:
-
-- `GET` → Buscar dados
-- `POST` → Criar registros
-- `PUT` → Atualizar registros
-- `DELETE` → Remover registros
-
-Todos os endpoints seguem convenções REST e retornam códigos HTTP apropriados.
-
----
-
-## 🚀 Como Executar o Projeto Localmente
-
-### Pré-requisitos
-- .NET SDK (net9.0)
-- SQL Server (LocalDB ou instância SQL Server)
-- (Opcional) SQL Server Management Studio
-
----
-
-### 1️⃣ Clonar o repositório
-```bash
+Bash
 git clone https://github.com/arthursilvaa-dev/BarberRezende.git
-cd BarberRezende
+Banco de Dados:
+Ajuste a DefaultConnection no appsettings.json da API e execute o comando abaixo na raiz:
+
+Bash
+dotnet ef database update --project BarberRezende.Infrastructure --startup-project BarberRezende.API
+Execução: Inicie os projetos BarberRezende.API e BarberRezende.Web simultaneamente.
+
+##### Credenciais Padrão (Seed):
+E-mail: admin@barberrezende.com
+
+Senha: 123456
+
+Desenvolvido por Arthur Silva como projeto de portfólio focado em Engenharia de Software e Melhores Práticas .NET.
