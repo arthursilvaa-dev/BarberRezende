@@ -11,8 +11,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models; 
 using System.Text;
+// Removi o using que estava dando erro e usei referências diretas abaixo
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,7 +40,7 @@ builder.Services.AddScoped<IFuncionariosService, FuncionariosService>();
 builder.Services.AddScoped<IServicosService, ServicosService>();
 builder.Services.AddScoped<IAgendamentosService, AgendamentosService>();
 
-// ================= 4. CONFIGURAÇÕES EXTRAS =================
+// ================= 4. MIDDLEWARES & CONFIGS =================
 builder.Services.AddTransient<ApiExceptionMiddleware>();
 
 builder.Services.AddAutoMapper(cfg =>
@@ -71,32 +71,33 @@ builder.Services.AddControllers().ConfigureApiBehaviorOptions(options =>
     };
 });
 
-// ================= 5. SWAGGER =================
+// ================= 5. SWAGGER (CONFIGURAÇÃO SIMPLIFICADA) =================
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
+builder.Services.AddSwaggerGen(c =>
 {
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    c.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "BarberRezende API", Version = "v1" });
+
+    c.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
+        Description = "JWT Authorization header usando o esquema Bearer. Exemplo: \"Bearer {token}\"",
         Name = "Authorization",
-        Type = SecuritySchemeType.Http,
-        Scheme = "bearer",
-        BearerFormat = "JWT",
-        In = ParameterLocation.Header,
-        Description = "Digite: Bearer {token}"
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer"
     });
 
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
             {
-                Reference = new OpenApiReference
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
                 {
-                    Type = ReferenceType.SecurityScheme,
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
                     Id = "Bearer"
                 }
             },
-            new string[] {}
+            new string[] { }
         }
     });
 });
@@ -133,9 +134,16 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 // ================= 7. PIPELINE (MIDDLEWARES) =================
-app.UseSwagger();
-app.UseSwaggerUI();
 
+// Habilita o Swagger em qualquer ambiente para podermos testar no MonsterASP
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "BarberRezende API V1");
+    c.RoutePrefix = "swagger"; // Define que o swagger abre em /swagger
+});
+
+// Redireciona a raiz para o swagger
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.UseCors("CorsDev");
@@ -153,10 +161,10 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<BarberRezendeDbContext>();
         
-        // Aplica as Migrations (Cria as tabelas no MonsterASP)
+        // Aplica as Migrations (Cria as tabelas se não existirem)
         context.Database.Migrate();
         
-        // Cria o usuário Admin inicial
+        // Tenta rodar o Seed
         SeedService.SeedAdmin(context);
     }
     catch (Exception ex)
