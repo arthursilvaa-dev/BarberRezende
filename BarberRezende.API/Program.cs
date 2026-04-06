@@ -232,7 +232,7 @@ using (var scope = app.Services.CreateScope())
         // Isso aplica as migrations no banco do MonsterASP automaticamente
         await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(context.Database);
         
-await BarberRezende.Infrastructure.Seed.SeedService.SeedAsync(context);
+        //await BarberRezende.Infrastructure.Seed.SeedService.SeedAsync(context);
         
     }
     catch (Exception ex)
