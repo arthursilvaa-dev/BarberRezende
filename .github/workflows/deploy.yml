@@ -25,4 +25,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./publish/
+          # No MonsterASP, o FTP já cai dentro da raiz ou da wwwroot
           server-dir: /wwwroot/
+          # Isso ajuda a evitar o erro de GetHandle em alguns servidores
+          state-name: .ftp-deploy-sync-state.json
