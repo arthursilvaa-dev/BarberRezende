@@ -216,7 +216,7 @@ app.UseAuthorization();
 // Controllers
 app.MapControllers();
 
-var senha = "Admin123!";
+var senha = "Admin123!!";
 var hash = BCrypt.Net.BCrypt.HashPassword(senha);
 
 Console.WriteLine("HASH GERADA:");
