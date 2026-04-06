@@ -232,9 +232,8 @@ using (var scope = app.Services.CreateScope())
         // Isso aplica as migrations no banco do MonsterASP automaticamente
         await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(context.Database);
         
-        // Opcional: Chama o Seed se você quiser que o Admin padrão seja criado
-        var seeder = services.GetRequiredService<BarberRezende.Infrastructure.Seed.SeedService>();
-        await seeder.SeedAsync();
+await BarberRezende.Infrastructure.Seed.SeedService.SeedAsync(context);
+        
     }
     catch (Exception ex)
     {
