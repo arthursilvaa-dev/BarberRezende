@@ -222,4 +222,26 @@ var hash = BCrypt.Net.BCrypt.HashPassword(senha);
 Console.WriteLine("HASH GERADA:");
 Console.WriteLine(hash);
 
+// --- BLOCO DE AUTO-MIGRAÇÃO ---
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        var context = services.GetRequiredService<BarberRezende.Infrastructure.Data.BarberRezendeDbContext>();
+        // Isso aplica as migrations no banco do MonsterASP automaticamente
+        await Microsoft.EntityFrameworkCore.RelationalDatabaseFacadeExtensions.MigrateAsync(context.Database);
+        
+        // Opcional: Chama o Seed se você quiser que o Admin padrão seja criado
+        var seeder = services.GetRequiredService<BarberRezende.Infrastructure.Seed.SeedService>();
+        await seeder.SeedAsync();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Erro ao aplicar as migrações no banco de dados.");
+    }
+}
+// ------------------------------
+
 app.Run();
