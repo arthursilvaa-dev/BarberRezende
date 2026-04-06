@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models; 
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -84,11 +84,19 @@ builder.Services.AddSwaggerGen(options =>
         In = ParameterLocation.Header,
         Description = "Digite: Bearer {token}"
     });
+
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
     {
         {
-            new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } },
-            new List<string>()
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
         }
     });
 });
@@ -125,15 +133,9 @@ builder.Services.AddAuthorization();
 var app = builder.Build();
 
 // ================= 7. PIPELINE (MIDDLEWARES) =================
-
-// Força o Swagger a aparecer mesmo na Nuvem (MonsterASP)
 app.UseSwagger();
-app.UseSwaggerUI(c => 
-{
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "BarberRezende API v1");
-});
+app.UseSwaggerUI();
 
-// Redireciona a página inicial para o Swagger automaticamente
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.UseCors("CorsDev");
@@ -143,7 +145,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
-// ================= 8. AUTO-MIGRAÇÃO E SEED (A MÁGICA) =================
+// ================= 8. AUTO-MIGRAÇÃO E SEED =================
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
@@ -151,20 +153,16 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<BarberRezendeDbContext>();
         
-        Console.WriteLine("Verificando banco de dados...");
-        
         // Aplica as Migrations (Cria as tabelas no MonsterASP)
-        await context.Database.MigrateAsync();
+        context.Database.Migrate();
         
         // Cria o usuário Admin inicial
         SeedService.SeedAdmin(context);
-        
-        Console.WriteLine("Banco de dados pronto para uso!");
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Ocorreu um erro ao iniciar o banco de dados.");
+        logger.LogError(ex, "Erro ao iniciar o banco de dados.");
     }
 }
 
