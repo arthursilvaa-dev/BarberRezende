@@ -2,91 +2,134 @@
 <html lang="pt-br">
 	<head>
 		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>@ViewData["Title"] - Barber Rezende</title>
 
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-
-		<!-- Bootstrap CSS -->
-		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-			  rel="stylesheet" />
-
-		<!-- CSS opcional do projeto -->
+		<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+		<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet" />
 		<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-
-		<!-- CSS específico para a página de login -->
-		<link rel="stylesheet" href="~/css/login.css" />
-
 	</head>
 	<body>
 
+	<div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
+		<nav class="sidebar d-none d-lg-block" id="sidebarMenu">
 
-		<!-- Navbar -->
-		<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-			<div class="container">
-				<a class="navbar-brand" asp-controller="Admin" asp-action="Index">
-					<img src="~/img/LogoPNGleao.png" alt="Logo" style="height:70px; filter: drop-shadow(0 0 4px rgba(212,175,55,0.6));" />
+			<button class="d-lg-none position-absolute top-0 end-0 m-3" onclick="toggleSidebar()" style="background: transparent; border: none; color: var(--text-muted); font-size: 1.5rem; transition: 0.3s;">
+				<i class="fas fa-times"></i>
+			</button>
+			<div class="sidebar-brand">
+				<i class="fa-solid fa-crown fa-3x mb-2" style="color: var(--accent-gold);"></i>
+				<h4>Barber Rezende</h4>
+			</div>
 
-					Barber Rezende
+			<ul class="nav flex-column mt-3">
+				<li class="nav-item">
+					<a class="nav-link" asp-controller="Admin" asp-action="Index">
+						<i class="fas fa-chart-line"></i> Dashboard
+					</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" asp-controller="Clientes" asp-action="Index">
+						<i class="fas fa-users"></i> Clientes
+					</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" asp-controller="Barbeiros" asp-action="Index">
+						<i class="fas fa-cut"></i> Barbeiros
+					</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" asp-controller="Servicos" asp-action="Index">
+						<i class="fas fa-list"></i> Serviços
+					</a>
+				</li>
+				<li class="nav-item">
+					<a class="nav-link" asp-controller="Agendamentos" asp-action="Index">
+						<i class="fas fa-calendar-alt"></i> Agendamentos
+					</a>
+				</li>
+
+				<hr style="border-color: rgba(255,255,255,0.1); margin: 15px 20px;"/>
+
+					<li class="nav-item">
+						<a class="nav-link" asp-controller="Configuracoes" asp-action="Index">
+							<i class="fas fa-cog"></i> Configurações
+						</a>
+					</li>
+
+				</ul>
+			
+			<div class="position-absolute bottom-0 w-100 p-4">
+				<a asp-controller="Auth" asp-action="Logout" class="btn btn-outline-danger w-100 rounded-pill">
+					<i class="fas fa-sign-out-alt me-2"></i> Sair
 				</a>
-
-
-				<button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-						data-bs-target="#menu">
-					<span class="navbar-toggler-icon"></span>
-				</button>
-
-				<div class="collapse navbar-collapse" id="menu">
-					<ul class="navbar-nav ms-auto">
-						<li class="nav-item">
-							<a class="nav-link" asp-controller="Admin" asp-action="Index">Dashboard</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" asp-controller="Clientes" asp-action="Index">Clientes</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" asp-controller="Barbeiros" asp-action="Index">Barbeiros</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" asp-controller="Servicos" asp-action="Index">Serviços</a>
-						</li>
-						<li class="nav-item">
-							<a class="nav-link" asp-controller="Agendamentos" asp-action="Index">Agendamentos</a>
-						</li>
-					</ul>
-				</div>
 			</div>
 		</nav>
 
+		<div class="main-content" id="mainContent">
+			<header class="topbar-header glass-panel px-4 py-3 rounded-4 mb-4">
+				<div class="d-flex align-items-center">
+					<button class="mobile-toggle d-lg-none me-3" onclick="toggleSidebar()" style="background: none; border: none; color: var(--accent-gold); font-size: 1.5rem;">
+						<i class="fas fa-bars"></i>
+					</button>
+					<h2 class="mb-0" data-aos="fade-right">@ViewData["Title"]</h2>
+				</div>
 
-		@if (TempData["Success"] != null)
-		{
-		<div class="alert alert-success mt-3">
-			@TempData["Success"]
+				<div class="user-profile" data-aos="fade-left">
+					<span>
+						Olá, <strong style="color: var(--accent-gold);">Admin</strong>
+					</span>
+					<i class="fas fa-user-circle fa-2x ms-2" style="color: var(--accent-gold);"></i>
+				</div>
+			</header>
+
+			<main role="main">
+				@RenderBody()
+			</main>
 		</div>
-		}
 
-		@if (TempData["Error"] != null)
-		{
-		<div class="alert alert-danger mt-3">
-			@TempData["Error"]
-		</div>
-		}
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+		<script src="~/js/site.js" asp-append-version="true"></script>
 
-		<!-- Conteúdo das páginas -->
-		<main class="container my-4">
-			@RenderBody()
-		</main>
 
-		<!-- Footer simples -->
-		<footer class="text-center text-muted py-3">
-			<small>© @DateTime.Now.Year - Barber Rezende</small>
-		</footer>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+		<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+		<script src="~/js/site.js" asp-append-version="true"></script>
+		<script src="~/js/alerts.js" asp-append-version="true"></script>
 
-		<!-- Bootstrap JS -->
-		<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+		<script>
+			// Start nas Animações Mágicas de Rolagem
+			AOS.init({ duration: 800, once: true, offset: 50 });
 
-		<script src="~/js/telefone-mask.js"></script>
-		@RenderSection("Scripts", required: false)
+			// Função Consolidada do Menu Mobile
+			function toggleSidebar() {
+			document.getElementById('sidebarMenu').classList.toggle('show');
+			document.getElementById('sidebarBackdrop').classList.toggle('show');
+			}
 
+			// ===============================================
+			// HANDLER PREMIUM DE TEMP DATA (Leitura Sênior)
+			// ===============================================
+			document.addEventListener("DOMContentLoaded", function() {
+			// Script do Menu Ativo continua aqui...
+			// [cole aqui o script mágico do menu ativo que fizemos antes, se ele não estiver no site.js]
+
+			// LÊ MENSAGENS DO BACKEND E ACIONA O SwAL2
+			@{
+			if (TempData["Success"] != null) {
+			<text>showToast("Sucesso!", "@TempData["Success"]", "success");</text>
+			} else if (TempData["Error"] != null) {
+			<text>showToast("Ops!", "@TempData["Error"]", "error");</text>
+			}
+			}
+			});
+		</script>
+		@await RenderSectionAsync("Scripts", required: false)
 	</body>
 </html>

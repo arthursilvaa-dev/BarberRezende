@@ -55,5 +55,11 @@ namespace BarberRezende.Infrastructure.Repositories
             await _context.AdminUsers.AddAsync(admin);
             await _context.SaveChangesAsync();
         }
+
+        public async Task UpdateAsync(AdminUser user)
+        {
+            _context.AdminUsers.Update(user);
+            await _context.SaveChangesAsync();
+        }
     }
 }

@@ -28,7 +28,7 @@ namespace BarberRezende.Domain.Entities
         /// Hash da senha armazenado com BCrypt.
         /// Nunca armazenamos senha em texto puro.
         /// </summary>
-        public string PasswordHash { get; private set; } //passwordhash é o hash da senha, e não a senha em si.
+        public string PasswordHash { get;  set; } //passwordhash é o hash da senha, e não a senha em si.
                                                          //Usamos private setter para garantir que a senha só
                                                          //possa ser alterada por um método específico, como
                                                          //UpdatePassword, onde podemos aplicar regras

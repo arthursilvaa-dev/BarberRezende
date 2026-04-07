@@ -1,12 +1,13 @@
-﻿using System.Net;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-
+﻿using BarberRezende.Domain.Entities;
 using BarberRezende.Web.Models.Agendamentos;
 using BarberRezende.Web.Models.Barbeiros;
 using BarberRezende.Web.Models.Clientes;
 using BarberRezende.Web.Models.Common;
 using BarberRezende.Web.Models.Servicos;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 
 namespace BarberRezende.Web.Services
 {
@@ -243,6 +244,20 @@ namespace BarberRezende.Web.Services
                 return ApiResult<object>.Fail($"Erro ao conectar: {ex.Message}", 0);
             }
         }
+
+        public async Task<(bool Success, string FriendlyMessage)> ChangePasswordAsync(string email, string senhaAtual, string novaSenha)
+        {
+            var payload = new { Email = email, SenhaAtual = senhaAtual, NovaSenha = novaSenha };
+
+            
+            var response = await _http.PostAsJsonAsync("/api/auth/change-password", payload);
+
+            if (response.IsSuccessStatusCode)
+                return (true, "Senha alterada com sucesso!");
+
+            return (false, "Senha atual incorreta ou erro ao atualizar.");
+        }
+
     }
 
     // =========================================================

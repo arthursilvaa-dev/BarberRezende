@@ -59,5 +59,31 @@ namespace BarberRezende.Application.Services
                 ExpiresAt = expiresAt
             };
         }
+
+        /// <summary>
+        /// Troca a senha do administrador validando a senha atual.
+        /// </summary>
+        public async Task<bool> ChangePasswordAsync(ChangePasswordDto request)
+        {
+            // 1️⃣ Buscar o usuário (Admin)
+            var admin = await _adminRepository.GetByEmailAsync(request.Email);
+            if (admin == null)
+                throw new System.Exception("Usuário não encontrado.");
+
+            // 2️⃣ Validar se a senha atual digitada está correta
+            var passwordValid = BCrypt.Net.BCrypt.Verify(request.SenhaAtual, admin.PasswordHash);
+            if (!passwordValid)
+                return false; // Retorna falso se ele errar a senha atual
+
+            // 3️⃣ Criptografar a NOVA senha
+            admin.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NovaSenha);
+
+            // 4️⃣ Salvar no banco (Estou assumindo que seu repositório tem um método Update)
+            await _adminRepository.UpdateAsync(admin);
+
+            return true;
+        }
+
+
     }
 }

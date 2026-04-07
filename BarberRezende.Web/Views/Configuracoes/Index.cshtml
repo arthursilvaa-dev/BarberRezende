@@ -1,0 +1,84 @@
+﻿@model BarberRezende.Web.Models.Configuracoes.MudarSenhaVm
+
+@{
+    ViewData["Title"] = "Configurações";
+}
+
+<div class="row g-4" data-aos="fade-up">
+    
+    <div class="col-12 col-lg-6">
+        <div class="card-premium p-4 h-100">
+            <div class="d-flex align-items-center mb-4">
+                <div class="stat-icon me-3" style="width: 50px; height: 50px; background: rgba(212, 175, 55, 0.1); color: var(--accent-gold); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                    <i class="fas fa-user-shield"></i>
+                </div>
+                <h4 class="mb-0" style="font-family: 'Poppins';">Dados da Conta</h4>
+            </div>
+
+            <form id="formPerfil">
+                <div class="mb-3">
+                    <label class="form-label text-muted"><small>Nome do Administrador</small></label>
+                    <input type="text" class="form-control" value="Admin" />
+                </div>
+                <div class="mb-4">
+                    <label class="form-label text-muted"><small>E-mail de Acesso</small></label>
+                    <input type="email" class="form-control" value="admin@barberrezende.com" />
+                </div>
+                <button type="button" class="btn btn-outline-light w-100" onclick="simularSalvamento('Perfil atualizado com sucesso!')">
+                    <i class="fas fa-save me-2"></i> Atualizar Perfil
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <div class="card-premium p-4 h-100">
+            <div class="d-flex align-items-center mb-4">
+                <div class="stat-icon me-3" style="width: 50px; height: 50px; background: rgba(255, 61, 0, 0.1); color: var(--danger-red); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                    <i class="fas fa-key"></i>
+                </div>
+                <h4 class="mb-0" style="font-family: 'Poppins';">Segurança</h4>
+            </div>
+
+<form asp-action="MudarSenha" method="post">
+                
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="mb-3">
+                    <label class="form-label text-muted"><small>Senha Atual</small></label>
+                    <input asp-for="SenhaAtual" type="password" class="form-control" placeholder="Digite a senha atual" />
+                    <span asp-validation-for="SenhaAtual" class="text-danger" style="font-size: 0.8rem;"></span>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted"><small>Nova Senha</small></label>
+                    <input asp-for="NovaSenha" type="password" class="form-control" placeholder="Mínimo de 6 caracteres" />
+                    <span asp-validation-for="NovaSenha" class="text-danger" style="font-size: 0.8rem;"></span>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label text-muted"><small>Confirmar Nova Senha</small></label>
+                    <input asp-for="ConfirmarSenha" type="password" class="form-control" placeholder="Repita a nova senha" />
+                    <span asp-validation-for="ConfirmarSenha" class="text-danger" style="font-size: 0.8rem;"></span>
+                </div>
+                
+                <button type="submit" class="btn btn-gold w-100">
+                    <i class="fas fa-lock me-2"></i> Mudar Senha
+                </button>
+            </form>        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        // Função para mostrar o SweetAlert de sucesso nesta tela
+        function simularSalvamento(mensagem) {
+            if (typeof showToast === "function") {
+                showToast("Sucesso!", mensagem, "success");
+            } else {
+                alert(mensagem); // Fallback caso o alerts.js demore a carregar
+            }
+        }
+    </script>
+}

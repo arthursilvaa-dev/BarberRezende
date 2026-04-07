@@ -30,5 +30,7 @@ namespace BarberRezende.Domain.Interfaces
         /// Adiciona um novo administrador.
         /// </summary>
         Task AddAsync(AdminUser admin);
+
+        Task UpdateAsync(AdminUser user);
     }
 }

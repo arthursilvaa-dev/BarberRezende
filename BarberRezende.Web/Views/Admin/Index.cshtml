@@ -1,101 +1,191 @@
-﻿@model BarberRezende.Web.Models.Admin.AdminDashboardVm
-
-@{
-    ViewData["Title"] = "Dashboard Administrativo";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-    
-    // Capitaliza a primeira letra do mês para ficar bonito na tela
-    var Culture = new System.Globalization.CultureInfo("pt-BR");
+﻿@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="p-4 bg-light rounded shadow-sm">
-    <h1 class="mb-3">Dashboard Administrativo</h1>
-    <p class="text-muted">Resumo do sistema, faturamento e atalhos rápidos.</p>
+<style>
+    .stat-card {
+        padding: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        background: rgba(212, 175, 55, 0.1);
+        color: var(--accent-gold);
+    }
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 700;
+        font-family: 'Poppins', sans-serif;
+        margin-bottom: 0;
+    }
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+</style>
 
-    <h4 class="mt-4 mb-3 border-bottom pb-2">Faturamento</h4>
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <div class="card text-white bg-success h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <h6 class="card-title text-uppercase fw-light">@Culture.TextInfo.ToTitleCase(Model.NomeMesAtual ?? "") (Atual)</h6>
-                    <h2 class="display-6 fw-bold mb-0">@Model.FaturamentoMesAtual.ToString("C")</h2>
-                </div>
+<div class="row g-4 mb-5">
+    <div class="col-12 col-md-6 col-xl-3" data-aos="fade-up" data-aos-delay="0">
+        <div class="card-premium stat-card">
+            <div>
+                <p class="stat-label">Total Clientes</p>
+                <h3 class="stat-value counter" data-target="1245">0</h3>
             </div>
+            <div class="stat-icon"><i class="fas fa-users"></i></div>
         </div>
-        <div class="col-md-4">
-            <div class="card bg-white h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <h6 class="card-title text-uppercase fw-light text-muted">@Culture.TextInfo.ToTitleCase(Model.NomeMesAnterior ?? "")</h6>
-                    <h3 class="fw-bold mb-0 text-dark">@Model.FaturamentoMesAnterior.ToString("C")</h3>
-                </div>
+    </div>
+    
+    <div class="col-12 col-md-6 col-xl-3" data-aos="fade-up" data-aos-delay="100">
+        <div class="card-premium stat-card">
+            <div>
+                <p class="stat-label">Agendamentos Hoje</p>
+                <h3 class="stat-value counter" data-target="42">0</h3>
             </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card bg-white h-100 shadow-sm border-0">
-                <div class="card-body">
-                    <h6 class="card-title text-uppercase fw-light text-muted">@Culture.TextInfo.ToTitleCase(Model.NomeDoisMesesAtras ?? "")</h6>
-                    <h3 class="fw-bold mb-0 text-dark">@Model.FaturamentoDoisMesesAtras.ToString("C")</h3>
-                </div>
-            </div>
+            <div class="stat-icon"><i class="fas fa-calendar-check"></i></div>
         </div>
     </div>
 
-    <h4 class="mt-4 mb-3 border-bottom pb-2">Visão Geral</h4>
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <h6 class="card-title text-muted">Total Clientes</h6>
-                    <h2 class="fw-bold text-primary">@Model.TotalClientes</h2>
-                </div>
+    <div class="col-12 col-md-6 col-xl-3" data-aos="fade-up" data-aos-delay="200">
+        <div class="card-premium stat-card">
+            <div>
+                <p class="stat-label">Barbeiros Ativos</p>
+                <h3 class="stat-value counter" data-target="8">0</h3>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <h6 class="card-title text-muted">Agendamentos</h6>
-                    <h2 class="fw-bold text-success">@Model.TotalAgendamentos</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <h6 class="card-title text-muted">Serviços Ativos</h6>
-                    <h2 class="fw-bold text-warning">@Model.TotalServicos</h2>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body text-center">
-                    <h6 class="card-title text-muted">Barbeiros</h6>
-                    <h2 class="fw-bold text-danger">@Model.TotalBarbeiros</h2>
-                </div>
-            </div>
+            <div class="stat-icon"><i class="fas fa-cut"></i></div>
         </div>
     </div>
 
-    <h4 class="mt-4 mb-3 border-bottom pb-2">Acesso Rápido</h4>
-    <div class="row g-3">
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body d-flex flex-column justify-content-center align-items-center text-center p-4">
-                    <h5 class="card-title">Gerenciar Clientes</h5>
-                    <p class="card-text text-muted small">Acesse a lista completa de clientes para editar ou cadastrar novos perfis.</p>
-                    <a class="btn btn-outline-primary px-4 rounded-pill" asp-controller="Clientes" asp-action="Index">Abrir Módulo de Clientes</a>
-                </div>
+    <div class="col-12 col-md-6 col-xl-3" data-aos="fade-up" data-aos-delay="300">
+        <div class="card-premium stat-card">
+            <div>
+                <p class="stat-label">Faturamento (Mês)</p>
+                <h3 class="stat-value text-success">R$ <span class="counter" data-target="15400">0</span></h3>
             </div>
+            <div class="stat-icon" style="background: rgba(0, 200, 83, 0.1); color: var(--success-green);"><i class="fas fa-dollar-sign"></i></div>
         </div>
+    </div>
+</div>
 
-        <div class="col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body d-flex flex-column justify-content-center align-items-center text-center p-4">
-                    <h5 class="card-title">Gerenciar Agendamentos</h5>
-                    <p class="card-text text-muted small">Controle a agenda, horários marcados e fluxo da barbearia.</p>
-                    <a class="btn btn-outline-success px-4 rounded-pill" asp-controller="Agendamentos" asp-action="Index">Abrir Módulo de Agendamentos</a>
-                </div>
+<div class="row" data-aos="zoom-in" data-aos-delay="400">
+    <div class="col-12">
+        <div class="card-premium p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4 style="font-family: 'Poppins';">Fluxo de Faturamento</h4>
+                <span class="badge bg-dark text-white border border-secondary">Últimos 3 meses</span>
+            </div>
+            <div style="height: 350px; width: 100%;">
+                <canvas id="revenueChart"></canvas>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // 1. Animação de Contagem (O Tchan dos números subindo)
+        const counters = document.querySelectorAll('.counter');
+        counters.forEach(counter => {
+            counter.innerText = '0';
+            const updateCounter = () => {
+                const target = +counter.getAttribute('data-target');
+                const c = +counter.innerText;
+                const increment = target / 50; // Velocidade
+
+                if (c < target) {
+                    counter.innerText = `${Math.ceil(c + increment)}`;
+                    setTimeout(updateCounter, 30);
+                } else {
+                    counter.innerText = target;
+                }
+            };
+            updateCounter();
+        });
+
+        // 2. Gráfico Premium Chart.js
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        
+        // Criando um Degradê Dourado para preencher abaixo da linha
+        let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(212, 175, 55, 0.5)'); // Dourado 50%
+        gradient.addColorStop(1, 'rgba(212, 175, 55, 0.0)'); // Transparente
+
+        new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        // APENAS 3 MESES
+                        labels: ['Fevereiro', 'Março', 'Abril (Atual)'],
+                        datasets: [{
+                            label: 'Faturamento (R$)',
+                            // DADOS MOCKADOS DOS ÚLTIMOS 3 MESES
+                            data: [12500, 13800, 15400], 
+                            borderColor: '#D4AF37', 
+                            backgroundColor: gradient,
+                            borderWidth: 3,
+                            pointBackgroundColor: '#12141D',
+                            pointBorderColor: '#D4AF37',
+                            pointBorderWidth: 2,
+                            pointRadius: 6,
+                            pointHoverRadius: 8,
+                            fill: true,
+                            tension: 0.4 
+                        }]
+                    },   
+            
+options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                
+                // --- TOQUE SÊNIOR: PADDING DO LAYOUT ---
+                layout: {
+                    padding: {
+                        top: 25,    // Mais espaço no topo para o tooltip não cortar
+                        right: 25,  // Espaço na direita para o último ponto
+                        bottom: 0,
+                        left: 0
+                    }
+                },
+                // ----------------------------------------
+
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#1E212B',
+                        titleColor: '#D4AF37',
+                        bodyColor: '#ffffff', // Garante cor legível
+                        bodyFont: { size: 14, weight: 'bold' },
+                        padding: 12,
+                        displayColors: false,
+                        cornerRadius: 8,
+                        callbacks: {
+                            label: function(context) {
+                                return 'R$ ' + context.parsed.y.toLocaleString('pt-BR');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#A0AEC0' }
+                    },
+                    x: {
+                        grid: { display: false },
+                        ticks: { color: '#A0AEC0' }
+                    }
+                }
+            }
+        });
+    </script>
+}

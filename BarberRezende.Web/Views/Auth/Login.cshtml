@@ -1,69 +1,101 @@
 ﻿@model BarberRezende.Web.Models.ViewModels.LoginViewModel
 
 @{
-    ViewData["Title"] = "Login";
+    // ISSO AQUI É O QUE TIRA O MENU LATERAL DA TELA DE LOGIN
+    Layout = null; 
 }
 
-<link rel="stylesheet" href="~/css/login.css">
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login - Barber Rezende</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-<div class="login-wrapper">
+    <style>
+        /* Mata qualquer margem branca e centraliza o painel */
+        body {
+            background-color: var(--bg-dark);
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden; /* Remove as barras de rolagem e os espaços brancos */
+            margin: 0;
+            padding: 0;
+        }
 
-    <div class="login-card">
+        .input-dark {
+            background-color: rgba(0,0,0,0.2) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            color: var(--text-main) !important;
+        }
+        
+        .input-dark:focus {
+            border-color: var(--accent-gold) !important;
+            box-shadow: 0 0 0 0.25rem rgba(212, 175, 55, 0.25) !important;
+        }
+    </style>
+</head>
+<body>
 
-        <h1>BarberRezende</h1>
-        <p>Painel Administrativo</p>
+    <div class="card-premium p-5" style="width: 420px; text-align: center;">
+        
+        <i class="fa-solid fa-crown fa-3x mb-3" style="color: var(--accent-gold);"></i>
+        <h2 style="font-family: 'Poppins'; color: var(--text-main);">Barber <span style="color: var(--accent-gold);">Rezende</span></h2>
+        <p style="color: var(--text-muted); margin-bottom: 30px;">Acesso Restrito</p>
 
         <form asp-action="Login" method="post">
-
-            <!-- EMAIL -->
-            <div class="input-group">
-                <label>Email</label>
-                <input asp-for="Email" class="input-field" placeholder="Digite seu email" />
-            </div>
-
-            <!-- SENHA -->
-            <div class="input-group">
-                <label>Senha</label>
-
-                <div class="password-wrapper">
-                    <input asp-for="Password"
-                           type="password"
-                           id="passwordInput"
-                           class="input-field"
-                           placeholder="Digite sua senha" />
-
-                    <span class="toggle-password" onclick="togglePassword()">
-                        👁
+            <div class="mb-3 text-start">
+                <label class="form-label text-white mb-1"><small>Email Corporativo</small></label>
+                <div class="input-group">
+                    <span class="input-group-text border-0" style="background-color: rgba(0,0,0,0.2); color: var(--accent-gold);">
+                        <i class="fas fa-envelope"></i>
                     </span>
+                    <input asp-for="Email" class="form-control input-dark" placeholder="admin@barberrezende.com" />
                 </div>
             </div>
 
-            <!-- ERRO -->
+            <div class="mb-4 text-start">
+                <label class="form-label text-white mb-1"><small>Senha</small></label>
+                <div class="input-group">
+                    <span class="input-group-text border-0" style="background-color: rgba(0,0,0,0.2); color: var(--accent-gold);">
+                        <i class="fas fa-lock"></i>
+                    </span>
+                    <input asp-for="Password" type="password" id="passwordInput" class="form-control input-dark" placeholder="••••••••" />
+                    <button class="btn btn-outline-secondary border-0" type="button" onclick="togglePassword()" style="background-color: rgba(0,0,0,0.2); color: var(--text-muted);">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+            </div>
+
             @if (!string.IsNullOrEmpty(Model?.ErrorMessage))
             {
-                <div class="error">
-                    @Model.ErrorMessage
+                <div class="alert alert-danger p-2 mb-4" style="font-size: 0.9rem;" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i> @Model.ErrorMessage
                 </div>
             }
 
-            <!-- BOTÃO -->
-            <button type="submit" class="btn-login">
-                Entrar
+            <button type="submit" class="btn-gold w-100 p-2 mt-2" style="font-size: 1.1rem;">
+                Entrar no Sistema
             </button>
-
         </form>
-
     </div>
 
-</div>
-
-<script>
-function togglePassword() {
-    const input = document.getElementById("passwordInput");
-
-    if (input.type === "password")
-        input.type = "text";
-    else
-        input.type = "password";
-}
-</script>
+    <script>
+        function togglePassword() {
+            const input = document.getElementById("passwordInput");
+            if (input.type === "password") {
+                input.type = "text";
+            } else {
+                input.type = "password";
+            }
+        }
+    </script>
+</body>
+</html>

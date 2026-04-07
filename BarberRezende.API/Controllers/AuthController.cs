@@ -48,5 +48,20 @@ namespace BarberRezende.API.Controllers
             // Se autenticar corretamente, retorna o token
             return Ok(response);
         }
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto request)
+        {
+            try {
+                var success = await _authService.ChangePasswordAsync(request);
+                if (!success)
+                    return BadRequest(new { message = "Senha atual incorreta." });
+
+                return Ok(new { message = "Senha alterada com sucesso!" });
+            }
+            catch (System.Exception ex) {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
     }
 }

@@ -18,5 +18,7 @@ namespace BarberRezende.Application.Interfaces.Services
         /// Retorna token JWT caso sucesso.
         /// </summary>
         Task<LoginResponseDto> LoginAsync(LoginRequestDto request);
+
+        Task<bool> ChangePasswordAsync(ChangePasswordDto request);
     }
 }
