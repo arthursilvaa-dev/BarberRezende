@@ -1,4 +1,4 @@
-﻿using BarberRezende.Web.Models;
+using BarberRezende.Web.Models;
 using BarberRezende.Web.Services;
 using Microsoft.Extensions.Options;
 using System.Net.Http.Headers;
@@ -31,7 +31,7 @@ builder.Services.Configure<ApiSettings>(
     builder.Configuration.GetSection("Api")
 );
 
-// ✅ HTTP CLIENT CORRETO
+// ✅ HTTP CLIENT CORRETO COM BYPASS DE SSL
 builder.Services.AddHttpClient("Api", (sp, client) =>
 {
     var settings = sp.GetRequiredService<IOptions<ApiSettings>>().Value;
@@ -44,6 +44,14 @@ builder.Services.AddHttpClient("Api", (sp, client) =>
     client.DefaultRequestHeaders.Accept.Clear();
     client.DefaultRequestHeaders.Accept.Add(
         new MediaTypeWithQualityHeaderValue("application/json"));
+})
+.ConfigurePrimaryHttpMessageHandler(() =>
+{
+    // Esta linha mágica ignora os erros de SSL do servidor gratuito do MonsterASP
+    return new HttpClientHandler
+    {
+        ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true
+    };
 });
 
 // ApiClient usando o HttpClient correto

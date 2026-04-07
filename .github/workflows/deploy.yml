@@ -1,0 +1,31 @@
+name: Deploy to MonsterASP
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Publish API
+        run: dotnet publish BarberRezende.API/BarberRezende.API.csproj -c Release -o ./publish
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./publish/
+          # No MonsterASP, o FTP já cai dentro da raiz ou da wwwroot
+          server-dir: /wwwroot/
+          # Isso ajuda a evitar o erro de GetHandle em alguns servidores
+          state-name: .ftp-deploy-sync-state.json
