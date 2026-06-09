@@ -18,6 +18,15 @@ jobs:
       - name: Publish API
         run: dotnet publish BarberRezende.API/BarberRezende.API.csproj -c Release -o ./publish
 
+      - name: Colocar app offline (liberar DLLs)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./.github/offline/
+          server-dir: /wwwroot/
+
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -25,7 +34,11 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./publish/
-          # No MonsterASP, o FTP já cai dentro da raiz ou da wwwroot
           server-dir: /wwwroot/
-          # Isso ajuda a evitar o erro de GetHandle em alguns servidores
           state-name: .ftp-deploy-sync-state.json
+
+      - name: Remover app_offline.htm (reativar app)
+        run: |
+          curl -s ftp://${{ secrets.FTP_SERVER }}/wwwroot/ \
+            --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+            -Q "DELE /wwwroot/app_offline.htm"
