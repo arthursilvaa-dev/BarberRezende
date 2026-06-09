@@ -19,13 +19,13 @@ jobs:
         run: dotnet publish BarberRezende.API/BarberRezende.API.csproj -c Release -o ./publish
 
       - name: Colocar app offline (liberar DLLs)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./.github/offline/
-          server-dir: /wwwroot/
+        run: |
+          mkdir -p ./.offline
+          echo "<html><body>Atualizando, volte em instantes...</body></html>" > ./.offline/app_offline.htm
+          curl -s ftp://${{ secrets.FTP_SERVER }}/wwwroot/ \
+            --user "${{ secrets.FTP_USERNAME }}:${{ secrets.FTP_PASSWORD }}" \
+            -T ./.offline/app_offline.htm \
+            ftp://${{ secrets.FTP_SERVER }}/wwwroot/app_offline.htm
 
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
